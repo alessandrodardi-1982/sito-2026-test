@@ -1,0 +1,745 @@
+﻿<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CV · Alessandro Dardi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Manrope:wght@300;400;500;600&display=swap">
+  <style>
+    :root {
+      --bg:         #FFFFFF;
+      --fg:         #18181B;
+      --muted:      #71717A;
+      --accent:     #0D9488;
+      --accent-bg:  #F0FDFA;
+      --accent-mid: #CCFBF1;
+      --surface:    #F8FAFC;
+      --border:     #E4E7EB;
+      --green:      #059669;
+      --display:    'Syne', system-ui, sans-serif;
+      --body:       'Manrope', system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:        #0F1117;
+        --fg:        #F1F5F9;
+        --muted:     #94A3B8;
+        --accent:    #2DD4BF;
+        --accent-bg: #0D2320;
+        --accent-mid:#134E4A;
+        --surface:   #1A1F2E;
+        --border:    #2D3748;
+        --green:     #34D399;
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg:        #0F1117;
+      --fg:        #F1F5F9;
+      --muted:     #94A3B8;
+      --accent:    #2DD4BF;
+      --accent-bg: #0D2320;
+      --accent-mid:#134E4A;
+      --surface:   #1A1F2E;
+      --border:    #2D3748;
+      --green:     #34D399;
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--body);
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding-left: max(24px, env(safe-area-inset-left, 0px));
+      padding-right: max(24px, env(safe-area-inset-right, 0px));
+    }
+
+    /* NAV */
+    #nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-block: 20px;
+      gap: 16px;
+    }
+    .nav-brand {
+      font-family: var(--display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+      margin: 0; padding: 0;
+    }
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.18s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 22px;
+      border-radius: 6px;
+      font-family: var(--body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.18s, transform 0.14s;
+      text-decoration: none;
+    }
+    .btn:hover { opacity: 0.82; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-solid { background: var(--accent); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--fg); border: 1.5px solid var(--border); }
+
+    /* HERO */
+    #hero {
+      padding-block: 80px 64px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-cv {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 48px;
+      align-items: center;
+    }
+    .hero-photo {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center top;
+      border: 3px solid var(--accent-mid);
+      display: block;
+    }
+    .eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .hero-name {
+      font-family: var(--display);
+      font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+      margin: 0 0 10px;
+    }
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin: 0 0 24px;
+    }
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 4px;
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+    .hero-contacts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.84rem;
+    }
+    .contact-item svg { color: var(--accent); flex-shrink: 0; }
+    .contact-item a:hover { color: var(--accent); }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* SECTIONS */
+    .section { padding-block: 72px; }
+    .section-alt { background: var(--surface); }
+    .section + .section,
+    .section-alt + .section,
+    .section + .section-alt { border-top: 1px solid var(--border); }
+
+    .s-title {
+      font-family: var(--display);
+      font-size: clamp(1.5rem, 2.8vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.022em;
+      margin: 0 0 36px;
+      line-height: 1.12;
+    }
+
+    /* PROFILO */
+    .profilo-text p {
+      color: var(--muted);
+      line-height: 1.82;
+      margin: 0 0 16px;
+      font-size: 0.975rem;
+      max-width: 800px;
+      text-align: justify;
+    }
+    .profilo-text p:last-child { margin: 0; }
+    .profilo-text strong { color: var(--fg); font-weight: 600; }
+
+    /* TIMELINE */
+    .timeline { display: flex; flex-direction: column; }
+    .tl-item {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 32px;
+      padding-bottom: 40px;
+      position: relative;
+    }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 222px;
+      top: 10px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+    .tl-left { text-align: right; padding-top: 3px; }
+    .tl-date {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      line-height: 1.4;
+    }
+    .tl-place {
+      font-size: 0.73rem;
+      color: var(--muted);
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+    .tl-right {
+      padding-left: 28px;
+      position: relative;
+    }
+    .tl-right::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      top: 7px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .tl-role {
+      font-family: var(--display);
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0 0 4px;
+      letter-spacing: -0.01em;
+    }
+    .tl-company {
+      font-size: 0.84rem;
+      color: var(--muted);
+      font-weight: 500;
+      margin: 0 0 10px;
+    }
+    .tl-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.72;
+      margin: 0;
+    }
+    .tl-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tl-tag {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 3px;
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .tl-current .tl-tag {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-color: var(--accent-mid);
+    }
+
+    /* COMPETENZE */
+    .skills-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+    }
+    .skill-block-title {
+      font-family: var(--display);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .skill-group { margin-bottom: 22px; }
+    .skill-group:last-child { margin-bottom: 0; }
+    .skill-group-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag {
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 4px;
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+    .tag-neutral {
+      background: var(--surface);
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+
+    /* LINGUE */
+    .lang-row { display: flex; gap: 48px; flex-wrap: wrap; }
+    .lang-name {
+      font-family: var(--display);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .lang-level { font-size: 0.82rem; color: var(--muted); }
+
+    /* FOOTER */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding-block: 28px;
+    }
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-row p { font-size: 0.76rem; color: var(--muted); margin: 0; }
+    .footer-tagline { font-style: italic; }
+
+    /* FADE */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade-up.in { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-up { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 820px) {
+      .nav-links { display: none; }
+      .hero-cv { grid-template-columns: 1fr; }
+      .hero-photo { width: 100px; height: 100px; order: -1; }
+      .tl-item { grid-template-columns: 1fr; gap: 6px; }
+      .tl-item::after { display: none; }
+      .tl-left { text-align: left; }
+      .tl-right { padding-left: 0; }
+      .tl-right::before { display: none; }
+      .skills-layout { grid-template-columns: 1fr; gap: 32px; }
+    }
+    @media (max-width: 520px) {
+      #hero { padding-block: 56px 44px; }
+      .hero-contacts { flex-direction: column; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="inner nav-row">
+    <span class="nav-brand">Alessandro Dardi</span>
+    <ul class="nav-links">
+      <li><a href="#profilo">Profilo</a></li>
+      <li><a href="#esperienze">Esperienze</a></li>
+      <li><a href="#competenze">Competenze</a></li>
+      <li><a href="#formazione">Formazione</a></li>
+    </ul>
+    <a href="index.html" target="_blank" class="btn btn-ghost">← Portfolio</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="inner">
+    <div class="hero-cv">
+      <div>
+        <div class="eyebrow fade-up">Curriculum Vitae · 2026</div>
+        <h1 class="hero-name fade-up">Alessandro Dardi</h1>
+        <p class="hero-subtitle fade-up">Service Manager · Operations · Automazione dei processi</p>
+        <div class="hero-badges fade-up">
+          <span class="badge">8 Anni in Operations</span>
+          <span class="badge">Ing. Gestionale · UniBo</span>
+          <span class="badge">Bologna, BO</span>
+        </div>
+        <div class="hero-contacts fade-up">
+          <span class="contact-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <a href="mailto:alessandro.dardi@gmail.com">alessandro.dardi@gmail.com</a>
+          </span>
+          <span class="contact-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.94 6.94l1.41-1.41a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <a href="tel:+393357057649">+39 335 705 7649</a> · Patente B · Automunito
+          </span>
+          <span class="contact-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+            <a href="https://wa.me/393357057649" target="_blank">WhatsApp</a>
+          </span>
+          <span class="contact-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            <a href="https://www.linkedin.com/in/alessandro-dardi" target="_blank">LinkedIn · Alessandro Dardi</a>
+          </span>
+        </div>
+        <div class="hero-btns fade-up">
+          <a href="index.html" target="_blank" class="btn btn-ghost">Guarda il portfolio →</a>
+        </div>
+      </div>
+      <img src="foto_profilo.png" alt="Alessandro Dardi" class="hero-photo fade-up">
+    </div>
+  </div>
+</section>
+
+<!-- PROFILO -->
+<section id="profilo" class="section">
+  <div class="inner">
+    <h2 class="s-title fade-up">Profilo</h2>
+    <div class="profilo-text">
+      <p class="fade-up">Otto anni di coordinamento di servizi tecnici B2B: reti di tecnici e fornitori, KPI operativi, manutenzione industriale e gestione delle emergenze sul campo. Ho costruito una comprensione profonda dei processi produttivi e delle esigenze concrete di chi lavora in operations.</p>
+      <p class="fade-up">Negli ultimi anni ho integrato <strong>automazione, analisi dati e integrazione API</strong> nel lavoro quotidiano: workflow n8n, agenti AI per il triage delle segnalazioni, dashboard Tableau/Excel, report automatizzati. Non teoria: strumenti usati davvero, costruiti per risolvere problemi reali.</p>
+      <p class="fade-up">Cerco un ruolo che combini <strong>conoscenza dei processi produttivi e capacità di applicare soluzioni tecnologiche</strong> in modo pratico. Il valore che porto è la capacità di stare tra il tecnico e il digitale, tradurre problemi operativi in automazioni funzionanti.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ESPERIENZE -->
+<section id="esperienze" class="section section-alt">
+  <div class="inner">
+    <h2 class="s-title fade-up">Esperienze</h2>
+    <div class="timeline">
+
+      <div class="tl-item tl-current fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Giu 2025 — oggi</div>
+          <div class="tl-place">Bologna</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Progetto autonomo — AI &amp; Automazione</div>
+          <div class="tl-company">Freelance · Operations, AI applicata e analisi operativa</div>
+          <p class="tl-desc">Sviluppo di workflow di automazione (n8n), agenti AI per il triage delle segnalazioni di guasto, dashboard Tableau/Excel e report automatizzati. Cinque tool operativi costruiti su casi reali dell'industria, tutti provabili.</p>
+          <div class="tl-tags">
+            <span class="tl-tag">n8n</span>
+            <span class="tl-tag">Claude API</span>
+            <span class="tl-tag">Agenti AI</span>
+            <span class="tl-tag">Tableau</span>
+            <span class="tl-tag">Automazione</span>
+            <span class="tl-tag">JavaScript</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item tl-current fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Feb — Giu 2025</div>
+          <div class="tl-place">Bologna</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Service Manager</div>
+          <div class="tl-company">Tecnimp Spa · Impianti tecnologici</div>
+          <p class="tl-desc">Responsabilità del reparto manutenzione: coordinamento tecnici, pianificazione interventi, gestione KPI di servizio e relazione con clienti B2B.</p>
+          <div class="tl-tags">
+            <span class="tl-tag">Service Management</span>
+            <span class="tl-tag">KPI</span>
+            <span class="tl-tag">B2B</span>
+            <span class="tl-tag">Coordinamento</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item tl-current fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Apr 2018 — Feb 2025</div>
+          <div class="tl-place">Zola Predosa (BO)</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Service Manager</div>
+          <div class="tl-company">Airmaster srl · Aria compressa e refrigerazione industriale</div>
+          <p class="tl-desc">7 anni di coordinamento operativo completo: pianificazione interventi, gestione rete tecnici e fornitori, KPI di servizio, digitalizzazione dei processi interni. Primo contatto diretto con automazione e analisi dati applicata alle operations.</p>
+          <div class="tl-tags">
+            <span class="tl-tag">Operations</span>
+            <span class="tl-tag">Coordinamento tecnici</span>
+            <span class="tl-tag">KPI &amp; Reporting</span>
+            <span class="tl-tag">CRM Innova</span>
+            <span class="tl-tag">SAP</span>
+            <span class="tl-tag">Digitalizzazione</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item tl-current fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Mar 2016 — Apr 2018</div>
+          <div class="tl-place">Bologna</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Analista funzionale IT</div>
+          <div class="tl-company">GrandVision Italy · Retail ottico</div>
+          <p class="tl-desc">Analisi e supporto ai sistemi informativi aziendali in ambito retail. Interfaccia tra business e IT, gestione dei processi di configurazione e testing.</p>
+          <div class="tl-tags">
+            <span class="tl-tag">Analisi funzionale</span>
+            <span class="tl-tag">IT</span>
+            <span class="tl-tag">Retail</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- COMPETENZE -->
+<section id="competenze" class="section">
+  <div class="inner">
+    <h2 class="s-title fade-up">Competenze</h2>
+    <div class="skills-layout">
+
+      <div class="fade-up">
+        <div class="skill-block-title">Competenze digitali</div>
+        <div class="skill-group">
+          <div class="skill-group-label">Dati &amp; Reporting</div>
+          <div class="tags">
+            <span class="tag">Excel avanzato</span>
+            <span class="tag">Tableau</span>
+            <span class="tag">KPI &amp; Reporting</span>
+            <span class="tag">SQL</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-label">Automazione &amp; AI</div>
+          <div class="tags">
+            <span class="tag">n8n</span>
+            <span class="tag">Claude API</span>
+            <span class="tag">Agenti AI</span>
+            <span class="tag">Webhook</span>
+            <span class="tag">JavaScript</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-label">Gestionale &amp; PM</div>
+          <div class="tags">
+            <span class="tag">SAP</span>
+            <span class="tag">CRM Innova</span>
+            <span class="tag">Microsoft 365</span>
+            <span class="tag">Project Management</span>
+            <span class="tag">Agile</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fade-up">
+        <div class="skill-block-title">Soft skill</div>
+        <div class="skill-group">
+          <div class="skill-group-label">Operativa</div>
+          <div class="tags">
+            <span class="tag tag-neutral">Gestione priorità</span>
+            <span class="tag tag-neutral">Problem solving</span>
+            <span class="tag tag-neutral">Pianificazione</span>
+            <span class="tag tag-neutral">Gestione emergenze</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-label">People</div>
+          <div class="tags">
+            <span class="tag tag-neutral">Coordinamento team</span>
+            <span class="tag tag-neutral">Gestione fornitori</span>
+            <span class="tag tag-neutral">Relazione clienti B2B</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-label">Trasversale</div>
+          <div class="tags">
+            <span class="tag tag-neutral">Autonomia</span>
+            <span class="tag tag-neutral">Adattabilità</span>
+            <span class="tag tag-neutral">Comunicazione tecnica</span>
+            <span class="tag tag-neutral">Mindset digitale</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FORMAZIONE -->
+<section id="formazione" class="section section-alt">
+  <div class="inner">
+    <h2 class="s-title fade-up">Formazione</h2>
+    <div class="timeline">
+
+      <div class="tl-item tl-current fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Feb — Mag 2026</div>
+          <div class="tl-place">Talent Garden</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Master in Digital Restart</div>
+          <div class="tl-company">Talent Garden</div>
+          <p class="tl-desc">Percorso avanzato su trasformazione digitale, innovazione e nuovi modelli di business in ambito tech.</p>
+        </div>
+      </div>
+
+      <div class="tl-item fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Mag 2026</div>
+          <div class="tl-place">Udemy</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">n8n e JavaScript per automazioni e agenti AI</div>
+          <div class="tl-company">Udemy</div>
+          <p class="tl-desc">Corso pratico su sviluppo di workflow avanzati, automazioni multi-step e agenti AI con n8n e JavaScript.</p>
+        </div>
+      </div>
+
+      <div class="tl-item fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Mag 2025</div>
+          <div class="tl-place">Demetra Formazione</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Intelligenza artificiale e applicazioni pratiche</div>
+          <div class="tl-company">Demetra Formazione</div>
+          <p class="tl-desc">Formazione applicata sull'uso dell'AI in contesti aziendali: prompt engineering, strumenti AI e casi d'uso operativi.</p>
+        </div>
+      </div>
+
+      <div class="tl-item fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Gen — Mar 2016</div>
+          <div class="tl-place">IFOA, Modena</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Tecnico esperto nella gestione aziendale</div>
+          <div class="tl-company">IFOA Modena</div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Gen — Set 2015</div>
+          <div class="tl-place">Bologna</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Corso SAP</div>
+          <div class="tl-company">The Software University, Bologna</div>
+        </div>
+      </div>
+
+      <div class="tl-item fade-up">
+        <div class="tl-left">
+          <div class="tl-date">Fino al 2015</div>
+          <div class="tl-place">Università di Bologna</div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-role">Laurea breve in Ingegneria Gestionale</div>
+          <div class="tl-company">Alma Mater Studiorum · Università di Bologna</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LINGUE -->
+    <div style="margin-top: 52px; padding-top: 44px; border-top: 1px solid var(--border);">
+      <h3 class="fade-up" style="font-family: var(--display); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 0 0 20px;">Lingue</h3>
+      <div class="lang-row fade-up">
+        <div>
+          <div class="lang-name">Italiano</div>
+          <div class="lang-level">Madrelingua</div>
+        </div>
+        <div>
+          <div class="lang-name">Inglese</div>
+          <div class="lang-level">B1 · Scritto e parlato, tecnico</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="inner">
+    <div class="footer-row">
+      <p>Alessandro Dardi · CV · Bologna 2026</p>
+      <p>Autorizzo il trattamento dei dati personali ai sensi dell'art. 13 GDPR 679/16</p>
+      <p class="footer-tagline">Le prove, non le promesse.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
+
