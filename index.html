@@ -49,6 +49,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+html { overflow-anchor: none; }
 body {
   background: var(--bg);
   color: var(--fg);
@@ -885,7 +886,10 @@ footer {
 
 <script>
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  window.scrollTo(0, 0);
+  function goTop() { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
+  goTop();
+  window.addEventListener('load', goTop);
+  window.addEventListener('pageshow', goTop);
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) {
