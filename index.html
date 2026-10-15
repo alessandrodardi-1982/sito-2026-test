@@ -132,6 +132,27 @@ a { color: inherit; text-decoration: none; }
 .nav-mobile a:last-child { border-bottom: none; }
 .nav-mobile a:hover { color: var(--accent); }
 #nav.nav-open .nav-mobile { display: block; }
+#back-top {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  z-index: 200;
+}
+#back-top.visible { opacity: 1; pointer-events: auto; }
+#back-top:hover { opacity: 0.85; }
 
 /* BUTTONS */
 .btn {
@@ -563,7 +584,7 @@ footer {
         <line x1="2" y1="5" x2="20" y2="5"/><line x1="2" y1="11" x2="20" y2="11"/><line x1="2" y1="17" x2="20" y2="17"/>
       </svg>
     </button>
-    <a href="#cta" class="btn btn-solid">Contattami →</a>
+    <a href="#cta" class="btn btn-solid">Contattami</a>
   </div>
   <div class="nav-mobile inner">
     <a href="#about">Chi sono</a>
@@ -572,6 +593,12 @@ footer {
     <a href="#looking">Cosa cerco</a>
   </div>
 </nav>
+
+<button id="back-top" aria-label="Torna in cima">
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3,11 9,5 15,11"/>
+  </svg>
+</button>
 
 <!-- HERO -->
 <section id="hero">
@@ -927,6 +954,13 @@ footer {
 
 <script>
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+  // Back to top
+  const backTop = document.getElementById('back-top');
+  window.addEventListener('scroll', () => {
+    backTop.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
   // Hamburger menu
   const burger = document.querySelector('.nav-burger');
