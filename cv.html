@@ -120,6 +120,27 @@
     .btn:active { transform: translateY(0); }
     .btn-solid { background: var(--accent); color: #fff; }
     .btn-ghost { background: transparent; color: var(--fg); border: 1.5px solid var(--border); }
+    #back-top {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      z-index: 200;
+    }
+    #back-top.visible { opacity: 1; pointer-events: auto; }
+    #back-top:hover { opacity: 0.85; }
 
     /* HERO */
     #hero {
@@ -463,9 +484,10 @@
   <div class="inner">
     <h2 class="s-title fade-up">Profilo</h2>
     <div class="profilo-text">
-      <p class="fade-up">Otto anni di coordinamento di servizi tecnici B2B: reti di tecnici e fornitori, KPI operativi, manutenzione industriale e gestione delle emergenze sul campo. Ho costruito una comprensione profonda dei processi produttivi e delle esigenze concrete di chi lavora in operations.</p>
-      <p class="fade-up">Negli ultimi anni ho integrato <strong>automazione, analisi dati e integrazione API</strong> nel lavoro quotidiano: workflow n8n, agenti AI per il triage delle segnalazioni, dashboard Tableau/Excel, report automatizzati. Non teoria: strumenti usati davvero, costruiti per risolvere problemi reali.</p>
-      <p class="fade-up">Cerco un ruolo che combini <strong>conoscenza dei processi produttivi e capacità di applicare soluzioni tecnologiche</strong> in modo pratico. Il valore che porto è la capacità di stare tra il tecnico e il digitale, tradurre problemi operativi in automazioni funzionanti.</p>
+      <p class="fade-up">Laurea in Ingegneria Gestionale a Bologna, otto anni nelle operations industriali: aria compressa, refrigerazione, impianti. Ho coordinato tecnici, gestito fornitori, seguito clienti dalla preventivazione alla chiusura intervento. Ho imparato a leggere i problemi prima che diventino emergenze e a tenere insieme persone, dati e scadenze.</p>
+      <p class="fade-up">Negli ultimi anni ho aggiunto un layer diverso: <strong>automazione dei processi, analisi dati, AI applicata</strong> — workflow n8n, agenti AI, dashboard, report automatizzati. Non per cambiare mestiere, ma per fare meglio quello che so già fare e per portare quella mentalità in contesti che ne hanno bisogno.</p>
+      <p class="fade-up">I problemi che ho imparato a gestire nell'industria — coordinamento, priorità, dati dispersi, persone da tenere allineate — li ritrovo ovunque. Il settore cambia, il metodo no.</p>
+      <p class="fade-up">So anche distinguere cosa può girare in locale (senza che un dato esca dall'azienda) e cosa richiede un presidio GDPR o AI Act. Per molte PMI non è un dettaglio: è la differenza tra poter adottare uno strumento e non poterlo fare.</p>
     </div>
   </div>
 </section>
@@ -733,9 +755,20 @@
   </div>
 </footer>
 
+<button id="back-top" aria-label="Torna in cima">
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3,11 9,5 15,11"/>
+  </svg>
+</button>
+
 <script>
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 window.scrollTo(0, 0);
+const backTop = document.getElementById('back-top');
+window.addEventListener('scroll', () => {
+  backTop.classList.toggle('visible', window.scrollY > 400);
+}, { passive: true });
+backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
