@@ -223,7 +223,8 @@ a { color: inherit; text-decoration: none; }
   margin: 0 0 44px;
   font-weight: 400;
 }
-.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: center; }
+@media (min-width: 821px) { .hero-actions { justify-content: flex-start; } }
 
 /* STRIP */
 #strip {
