@@ -104,6 +104,12 @@ a { color: inherit; text-decoration: none; }
   height: 38px;
   width: auto;
 }
+.nav-logo-full { display: block; }
+.nav-logo-mono { display: none; }
+@media (max-width: 520px) {
+  .nav-logo-full { display: none; }
+  .nav-logo-mono { display: block; }
+}
 .nav-logo-mark { stroke: var(--accent); }
 .nav-logo-sep  { stroke: var(--accent); opacity: 0.4; }
 .nav-logo-name { fill: var(--fg); font-family: Arial, Helvetica, sans-serif; }
@@ -609,7 +615,8 @@ footer {
 <nav id="nav">
   <div class="inner nav-row">
     <a href="#" class="nav-brand" aria-label="Alessandro Dardi">
-      <svg viewBox="0 0 1060 165" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+      <!-- Logo completo: desktop -->
+      <svg class="nav-logo-full" viewBox="0 0 1060 165" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <g fill="none" stroke-linecap="square" stroke-linejoin="miter">
           <path class="nav-logo-mark" d="M32 154 L83 34 L134 154" stroke-width="7"/>
           <path class="nav-logo-mark" d="M54 108 L111 108" stroke-width="5"/>
@@ -618,6 +625,15 @@ footer {
           <path class="nav-logo-sep" d="M277 38 L277 153" stroke-width="2"/>
         </g>
         <text class="nav-logo-name" x="317" y="107" font-size="43" font-weight="400" letter-spacing="10">ALESSANDRO DARDI</text>
+      </svg>
+      <!-- Solo monogramma AD: mobile -->
+      <svg class="nav-logo-mono" viewBox="0 0 260 165" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g fill="none" stroke-linecap="square" stroke-linejoin="miter">
+          <path class="nav-logo-mark" d="M32 154 L83 34 L134 154" stroke-width="7"/>
+          <path class="nav-logo-mark" d="M54 108 L111 108" stroke-width="5"/>
+          <path class="nav-logo-mark" d="M151 36 L151 153" stroke-width="7"/>
+          <path class="nav-logo-mark" d="M151 39 L180 39 C221 39 239 61 239 94 C239 128 220 151 180 151 L151 151" stroke-width="7"/>
+        </g>
       </svg>
     </a>
     <ul class="nav-links">
