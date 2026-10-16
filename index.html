@@ -404,6 +404,7 @@ a { color: inherit; text-decoration: none; }
 .proj-t3 { background: linear-gradient(135deg, #FBF0E8 0%, #F2D9C0 100%); }
 .proj-t4 { background: linear-gradient(135deg, #EEE8F5 0%, #D8C8EC 100%); }
 .proj-t5 { background: linear-gradient(135deg, #E8F5F5 0%, #C0E4E4 100%); }
+.proj-t6 { background: linear-gradient(135deg, #F5F0E8 0%, #ECD8B0 100%); }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .proj-t1 { background: linear-gradient(135deg,#152434,#1A3044); }
@@ -411,12 +412,14 @@ a { color: inherit; text-decoration: none; }
   :root:not([data-theme="light"]) .proj-t3 { background: linear-gradient(135deg,#281C10,#382414); }
   :root:not([data-theme="light"]) .proj-t4 { background: linear-gradient(135deg,#1C1428,#281C38); }
   :root:not([data-theme="light"]) .proj-t5 { background: linear-gradient(135deg,#102424,#143434); }
+  :root:not([data-theme="light"]) .proj-t6 { background: linear-gradient(135deg,#281E10,#382A14); }
 }
 :root[data-theme="dark"] .proj-t1 { background: linear-gradient(135deg,#152434,#1A3044); }
 :root[data-theme="dark"] .proj-t2 { background: linear-gradient(135deg,#152410,#1A3018); }
 :root[data-theme="dark"] .proj-t3 { background: linear-gradient(135deg,#281C10,#382414); }
 :root[data-theme="dark"] .proj-t4 { background: linear-gradient(135deg,#1C1428,#281C38); }
 :root[data-theme="dark"] .proj-t5 { background: linear-gradient(135deg,#102424,#143434); }
+:root[data-theme="dark"] .proj-t6 { background: linear-gradient(135deg,#281E10,#382A14); }
 
 .proj-body { padding: 24px; }
 .proj-cat {
@@ -750,7 +753,7 @@ footer {
 <section id="projects" class="section">
   <div class="inner">
     <div class="eyebrow fade-up">Portfolio</div>
-    <h2 class="s-title fade-up">Cinque tool costruiti, non descritti.</h2>
+    <h2 class="s-title fade-up">Sei tool costruiti, non descritti.</h2>
     <p class="s-lead fade-up">Ogni progetto nasce da situazioni che ho vissuto direttamente sul lavoro. I dati di esempio sono fittizi, ma costruiti su casi reali: sono gli strumenti che avrei voluto avere durante le mie attività quotidiane.</p>
     <div class="projects-grid">
 
@@ -874,6 +877,32 @@ footer {
               Browser only · Nessun server
             </span>
             <a href="rapportino_demo.html" target="_blank" class="proj-link">Prova →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="proj-card fade-up">
+        <div class="proj-thumb proj-t6">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
+            <rect x="6" y="6" width="40" height="30" rx="3"/>
+            <rect x="12" y="12" width="10" height="12" rx="1"/>
+            <rect x="26" y="16" width="14" height="8" rx="1"/>
+            <line x1="12" y1="30" x2="40" y2="30"/>
+            <line x1="12" y1="40" x2="40" y2="40"/>
+            <line x1="26" y1="36" x2="26" y2="44"/>
+          </svg>
+        </div>
+        <div class="proj-body">
+          <div class="proj-cat">Data Viz · AI</div>
+          <h3>Dashboard CEO</h3>
+          <p>Carica dati da Excel o CSV e ottieni una dashboard executive completa: KPI, margini, andamenti e aree critiche. Costruibile su qualsiasi settore e qualsiasi tipo di dati.</p>
+          <p class="proj-metric">Un report strategico pronto in secondi, senza bisogno di un analista dedicato.</p>
+          <div class="proj-foot">
+            <span class="proj-privacy">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1L1.5 3v3.5c0 2.5 2 4.5 4.5 5 2.5-.5 4.5-2.5 4.5-5V3L6 1z"/></svg>
+              Dati dimostrativi
+            </span>
+            <a href="https://alessandro-dardi.netlify.app/dashboard_ceo_v2.html" target="_blank" class="proj-link">Prova →</a>
           </div>
         </div>
       </div>
