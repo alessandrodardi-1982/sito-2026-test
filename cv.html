@@ -102,7 +102,27 @@
     .nav-logo-mono { display: none; }
     @media (max-width: 520px) {
       .nav-logo-full { display: none; }
-      .nav-logo-mono { display: block; }
+      .nav-logo-mono {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-logo-mono svg {
+        height: 28px;
+        width: auto;
+        flex-shrink: 0;
+      }
+      .nav-logo-stack {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.15;
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        color: var(--fg);
+      }
+      .nav-logo-stack span:first-child { color: var(--accent); }
     }
     .nav-logo-mark { stroke: var(--accent); }
     .nav-logo-sep  { stroke: var(--accent); opacity: 0.4; }
@@ -492,15 +512,21 @@
         </g>
         <text class="nav-logo-name" x="317" y="107" font-size="43" font-weight="400" letter-spacing="10">ALESSANDRO DARDI</text>
       </svg>
-      <!-- Solo monogramma AD: mobile -->
-      <svg class="nav-logo-mono" viewBox="0 0 260 165" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <g fill="none" stroke-linecap="square" stroke-linejoin="miter">
-          <path class="nav-logo-mark" d="M32 154 L83 34 L134 154" stroke-width="7"/>
-          <path class="nav-logo-mark" d="M54 108 L111 108" stroke-width="5"/>
-          <path class="nav-logo-mark" d="M151 36 L151 153" stroke-width="7"/>
-          <path class="nav-logo-mark" d="M151 39 L180 39 C221 39 239 61 239 94 C239 128 220 151 180 151 L151 151" stroke-width="7"/>
-        </g>
-      </svg>
+      <!-- Monogramma + nome impilato: mobile -->
+      <span class="nav-logo-mono" aria-hidden="true">
+        <svg viewBox="0 0 260 165" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke-linecap="square" stroke-linejoin="miter">
+            <path class="nav-logo-mark" d="M32 154 L83 34 L134 154" stroke-width="7"/>
+            <path class="nav-logo-mark" d="M54 108 L111 108" stroke-width="5"/>
+            <path class="nav-logo-mark" d="M151 36 L151 153" stroke-width="7"/>
+            <path class="nav-logo-mark" d="M151 39 L180 39 C221 39 239 61 239 94 C239 128 220 151 180 151 L151 151" stroke-width="7"/>
+          </g>
+        </svg>
+        <span class="nav-logo-stack">
+          <span>ALESSANDRO</span>
+          <span>DARDI</span>
+        </span>
+      </span>
     </a>
     <ul class="nav-links">
       <li><a href="#profilo">Profilo</a></li>
