@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Umami Opt-out</title>
+<style>
+  body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f7f7f7; }
+  .box { background: #fff; border-radius: 12px; padding: 40px 32px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 320px; }
+  h2 { margin: 0 0 12px; font-size: 1.2rem; }
+  p { color: #666; font-size: 0.9rem; margin: 0 0 24px; }
+  button { background: #0D9488; color: #fff; border: none; border-radius: 8px; padding: 14px 28px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
+  .status { margin-top: 20px; font-size: 0.9rem; font-weight: 600; color: #0D9488; display: none; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>Escludi questo dispositivo</h2>
+  <p>Clicca il bottone per non essere conteggiato nelle statistiche Umami da questo browser.</p>
+  <button onclick="optOut()">Escludi questo dispositivo</button>
+  <div class="status" id="status">Fatto! Questo dispositivo è escluso.</div>
+</div>
+<script>
+  function optOut() {
+    localStorage.setItem('umami.disabled', '1');
+    document.getElementById('status').style.display = 'block';
+    document.querySelector('button').disabled = true;
+    document.querySelector('button').style.opacity = '0.5';
+  }
+  if (localStorage.getItem('umami.disabled') === '1') {
+    document.getElementById('status').style.display = 'block';
+    document.querySelector('button').disabled = true;
+    document.querySelector('button').style.opacity = '0.5';
+  }
+</script>
+</body>
+</html>
