@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Analisi Documento</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* ─── TOKENS ─────────────────────────────────────── */
+:root {
+  --bg:        #f4f6fb;
+  --surface:   #ffffff;
+  --surface-2: #eef1f8;
+  --border:    #dde3ee;
+  --text:      #1b2337;
+  --muted:     #627292;
+  --faint:     #9aabbf;
+  --primary:   #1d3557;
+  --primary-h: #2a4a7a;
+  --accent:    #d9622b;
+  --accent-bg: #fef3ec;
+  --ok:        #1a7f4b;
+  --ok-bg:     #edf7f1;
+  --warn:      #c47b0a;
+  --warn-bg:   #fdf6e3;
+  --risk:      #c0392b;
+  --risk-bg:   #fdf0ef;
+  --r:         10px;
+  --r-sm:      6px;
+  --sh:        0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --sh-md:     0 4px 16px rgba(0,0,0,.09);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #0e1620;
+    --surface:   #172030;
+    --surface-2: #1e2b40;
+    --border:    #2c3d58;
+    --text:      #dce6f4;
+    --muted:     #7c95b8;
+    --faint:     #3f556e;
+    --primary:   #5a9ee0;
+    --primary-h: #74b5f5;
+    --accent:    #e8784a;
+    --accent-bg: #261608;
+    --ok:        #3dc876;
+    --ok-bg:     #0b2018;
+    --warn:      #e0a030;
+    --warn-bg:   #211608;
+    --risk:      #e05555;
+    --risk-bg:   #200e0e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#0e1620;--surface:#172030;--surface-2:#1e2b40;--border:#2c3d58;
+  --text:#dce6f4;--muted:#7c95b8;--faint:#3f556e;--primary:#5a9ee0;
+  --primary-h:#74b5f5;--accent:#e8784a;--accent-bg:#261608;--ok:#3dc876;
+  --ok-bg:#0b2018;--warn:#e0a030;--warn-bg:#211608;--risk:#e05555;
+  --risk-bg:#200e0e;color-scheme:dark;
+}
+
+/* ─── BASE ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.65;
+  padding-inline: 16px;
+  padding-block: 0;
+}
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { cursor: pointer; font-family: inherit; }
+
+/* ─── LAYOUT ─────────────────────────────────────── */
+.wrap { max-width: 780px; margin-inline: auto; padding-block: 40px 64px; }
+
+/* ─── STICKY HEADER ──────────────────────────────── */
+.site-header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 50;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(0,0,0,.06);
+  padding-inline: 16px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.site-header-inner {
+  max-width: 780px;
+  margin-inline: auto;
+  padding-block: 12px;
+}
+
+/* ─── TOPBAR ─────────────────────────────────────── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.topbar-left  { display: flex; align-items: center; gap: 10px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.brand-dot    { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.brand-name   { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: .02em; }
+
+.privacy-pill {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--ok); font-weight: 500;
+  background: var(--ok-bg); border: 1px solid var(--ok);
+  border-radius: 20px; padding: 3px 10px;
+}
+.mode-pill {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600;
+  border-radius: 20px; padding: 3px 10px;
+  transition: all .2s;
+}
+.mode-pill.demo { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+.mode-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* ─── HEADER ─────────────────────────────────────── */
+.page-header { margin-bottom: 32px; text-align: center; }
+.page-header h1 {
+  font-size: clamp(28px, 5vw, 40px); font-weight: 700;
+  color: var(--primary); line-height: 1.2;
+  text-wrap: balance; margin-bottom: 14px;
+  letter-spacing: -.01em;
+}
+.page-header p {
+  color: var(--text); font-size: 16px; margin-bottom: 20px;
+  line-height: 1.7; opacity: .8;
+}
+.header-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.header-pill {
+  font-size: 12px; font-weight: 500; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 12px;
+}
+
+/* ─── EXAMPLES ───────────────────────────────────── */
+.examples-label {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--faint); margin-bottom: 8px;
+}
+.examples-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; justify-content: center; }
+.ex-btn {
+  font-size: 12px; font-weight: 500; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 12px; transition: all .15s;
+}
+.ex-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--primary); }
+.ex-btn.pulse {
+  animation: pulse-btn 1.8s ease-in-out infinite;
+  border-color: var(--accent); color: var(--text);
+}
+@keyframes pulse-btn {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217,98,43,.3); }
+  50%       { box-shadow: 0 0 0 5px rgba(217,98,43,.0); }
+}
+
+/* ─── DEMO HINT ──────────────────────────────────── */
+.demo-hint {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--accent); font-weight: 500;
+  background: var(--accent-bg); border: 1px dashed var(--accent);
+  border-radius: var(--r-sm); padding: 10px 14px; margin-bottom: 16px;
+}
+.demo-hint svg { flex-shrink: 0; animation: bounce-up .9s ease-in-out infinite; }
+@keyframes bounce-up {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
+}
+.demo-hint.hidden { display: none; }
+
+/* ─── INPUT CARD ─────────────────────────────────── */
+.input-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); box-shadow: var(--sh);
+  padding: 24px; margin-bottom: 20px;
+}
+.field-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.field-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
+.field-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+select, textarea {
+  font-family: inherit; font-size: 14px; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 10px 12px;
+  outline: none; transition: border-color .15s, box-shadow .15s; width: 100%;
+}
+select:focus, textarea:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(29,53,87,.1);
+}
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+textarea { resize: vertical; min-height: 180px; line-height: 1.55; }
+.char-row { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.char-count { font-size: 11px; color: var(--faint); }
+.btn-clear-text {
+  font-size: 12px; font-weight: 600; color: var(--risk);
+  background: var(--risk-bg); border: 1px solid var(--risk);
+  border-radius: var(--r-sm); padding: 4px 10px;
+  display: flex; align-items: center; gap: 5px;
+  transition: background .15s, opacity .15s;
+  visibility: hidden; opacity: 0;
+}
+.btn-clear-text:hover { background: var(--risk); color: #fff; }
+.btn-clear-text.visible { visibility: visible; opacity: 1; }
+
+/* ─── ANALYZE BTN ────────────────────────────────── */
+.btn-analyze {
+  width: 100%; padding: 14px;
+  background: var(--primary); color: #fff;
+  font-size: 15px; font-weight: 600;
+  border: none; border-radius: var(--r-sm);
+  transition: background .15s, transform .1s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-analyze:hover { background: var(--primary-h); }
+.btn-analyze:active { transform: scale(.99); }
+.btn-analyze:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* ─── LOADING ─────────────────────────────────────── */
+.loading-bar {
+  width: 100%; height: 3px; background: var(--border);
+  border-radius: 2px; overflow: hidden; margin-top: 12px; display: none;
+}
+.loading-bar.active { display: block; }
+.loading-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 2px; transition: width .4s ease;
+}
+.loading-label {
+  font-size: 12px; color: var(--muted); text-align: center;
+  margin-top: 8px; display: none;
+}
+.loading-label.active { display: block; }
+
+/* ─── RESULTS ─────────────────────────────────────── */
+#results { display: none; }
+#results.visible { display: block; }
+
+.result-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.result-title { font-size: 18px; font-weight: 700; color: var(--text); }
+.result-meta  { font-size: 12px; color: var(--faint); margin-top: 3px; }
+
+.risk-badge {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+  padding: 6px 12px; border-radius: 20px; white-space: nowrap;
+}
+.risk-badge.ok   { background: var(--ok-bg);   color: var(--ok);   }
+.risk-badge.warn { background: var(--warn-bg);  color: var(--warn); }
+.risk-badge.risk { background: var(--risk-bg);  color: var(--risk); }
+
+.sections { display: flex; flex-direction: column; gap: 14px; }
+.section-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); box-shadow: var(--sh); overflow: hidden;
+}
+.section-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  cursor: pointer; user-select: none; transition: background .1s;
+}
+.section-head:hover { background: var(--surface-2); }
+.section-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.section-title  { font-size: 14px; font-weight: 600; flex: 1; }
+.section-chevron { color: var(--faint); font-size: 12px; transition: transform .2s; }
+.section-card.open .section-chevron { transform: rotate(180deg); }
+.section-body { padding: 16px 18px; display: none; }
+.section-card.open .section-body { display: block; }
+
+.section-card.sintesi    .section-icon { background: #e8eef8; color: var(--primary); }
+.section-card.include    .section-icon { background: var(--ok-bg);   color: var(--ok);   }
+.section-card.attenzione .section-icon { background: var(--warn-bg); color: var(--warn); }
+.section-card.condizioni .section-icon { background: var(--surface-2); color: var(--muted); }
+.section-card.domande    .section-icon { background: var(--accent-bg); color: var(--accent); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .section-card.sintesi .section-icon { background: #1e2d45; }
+}
+:root[data-theme="dark"] .section-card.sintesi .section-icon { background: #1e2d45; }
+
+.section-body ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.section-body ul li {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 14px; line-height: 1.55;
+}
+.section-body ul li::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--faint); flex-shrink: 0; margin-top: 7px;
+}
+.section-card.include    ul li::before { background: var(--ok);     }
+.section-card.attenzione ul li::before { background: var(--warn);   }
+.section-card.domande    ul li::before { background: var(--accent);  }
+
+.section-body p { font-size: 14px; color: var(--muted); line-height: 1.65; }
+.section-body .alert {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 12px; border-radius: var(--r-sm); margin-bottom: 8px;
+  font-size: 13px; font-weight: 500; line-height: 1.55;
+}
+.section-body .alert.warn { background: var(--warn-bg); color: var(--warn); }
+.section-body .alert.risk { background: var(--risk-bg); color: var(--risk); }
+
+.kv-list { display: flex; flex-direction: column; gap: 8px; }
+.kv-row  { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
+.kv-key  { font-weight: 600; color: var(--muted); min-width: 140px; flex-shrink: 0; }
+.kv-val  { color: var(--text); flex: 1; }
+.kv-val.flag { color: var(--warn); font-weight: 600; }
+
+/* ─── ACTIONS ─────────────────────────────────────── */
+.result-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.btn-secondary {
+  padding: 9px 16px; font-size: 13px; font-weight: 500;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  display: flex; align-items: center; gap: 6px; transition: background .15s;
+}
+.btn-secondary:hover { background: var(--surface-2); }
+.btn-reset {
+  padding: 9px 16px; font-size: 13px; font-weight: 500;
+  background: transparent; color: var(--muted);
+  border: 1px dashed var(--border); border-radius: var(--r-sm);
+  transition: all .15s;
+}
+.btn-reset:hover { border-color: var(--muted); color: var(--text); }
+
+/* ─── SOURCE BADGE ───────────────────────────────── */
+.source-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500; color: var(--faint);
+  padding: 3px 8px; border-radius: 5px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+/* ─── PRIVACY NOTE ───────────────────────────────── */
+.privacy-note {
+  margin-top: 40px; padding: 16px 18px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); display: flex; gap: 12px; align-items: flex-start;
+}
+.privacy-note svg { flex-shrink: 0; color: var(--muted); margin-top: 1px; }
+.privacy-note p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.privacy-note strong { color: var(--text); }
+
+/* ─── FOOTER ─────────────────────────────────────── */
+footer {
+  text-align: center; font-size: 12px; color: var(--faint);
+  margin-top: 48px; padding-block: 24px;
+  border-top: 1px solid var(--border);
+}
+footer a { color: var(--faint); }
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 480px) {
+  .field-row { flex-direction: column; }
+  .result-header, .result-actions { flex-direction: column; }
+  .result-actions button { width: 100%; justify-content: center; }
+  .kv-key { min-width: 110px; }
+  .api-row { flex-direction: column; }
+  .api-row button, .api-row input { width: 100%; }
+}
+
+/* ─── TOAST ──────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: var(--bg);
+  font-size: 13px; font-weight: 500;
+  padding: 10px 18px; border-radius: 20px;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+  z-index: 100; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ─── ERROR ──────────────────────────────────────── */
+.error-box {
+  background: var(--risk-bg); border: 1px solid var(--risk);
+  color: var(--risk); border-radius: var(--r-sm);
+  padding: 12px 16px; font-size: 13px; font-weight: 500;
+  margin-top: 12px; display: none; line-height: 1.55;
+}
+.error-box.show { display: block; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="brand-dot"></div>
+        <span class="brand-name">Alessandro Dardi · AI Tools</span>
+      </div>
+      <div class="topbar-right">
+        <a href="https://alessandrodardi-1982.github.io/sito-2026-test/" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;transition:all 0.15s;" onmouseover="this.style.color='var(--primary)';this.style.borderColor='var(--primary)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">← Portfolio</a>
+        <div class="mode-pill demo" id="modePill">
+          <span class="dot"></span>
+          <span id="modeLabel">Demo</span>
+        </div>
+        <div class="privacy-pill">
+          <svg width="11" height="12" viewBox="0 0 11 12" fill="none">
+            <path d="M5.5 1L1 3v3c0 2.5 1.9 4.8 4.5 5.5C8.1 10.8 10 8.5 10 6V3L5.5 1z" fill="currentColor" opacity=".25"/>
+            <path d="M5.5 1L1 3v3c0 2.5 1.9 4.8 4.5 5.5C8.1 10.8 10 8.5 10 6V3L5.5 1z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          </svg>
+          Nessun salvataggio sul sito
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h1>Analisi rapida di qualsiasi documento</h1>
+    <p>Hai un preventivo da valutare, un contratto da firmare o un'email commerciale a cui rispondere? Scegli un esempio pronto e in pochi secondi vedi i punti critici, le condizioni chiave e le domande giuste da fare, senza rileggere tutto tre volte.</p>
+    <div class="header-pills">
+      <span class="header-pill">⏱ Da 30 minuti a 30 secondi</span>
+      <span class="header-pill">📋 5 sezioni strutturate</span>
+      <span class="header-pill">🏢 Funziona per qualsiasi settore</span>
+    </div>
+  </div>
+
+  <!-- EXAMPLES -->
+  <div class="examples-label">Esempi pronti da caricare</div>
+  <div class="examples-row">
+    <button class="ex-btn" onclick="loadExample('preventivo')">📄 Preventivo fornitore</button>
+    <button class="ex-btn" onclick="loadExample('contratto')">📑 Contratto di servizio</button>
+    <button class="ex-btn" onclick="loadExample('email')">✉️ Email commerciale</button>
+    <button class="ex-btn" onclick="loadExample('locazione')">🏢 Contratto locazione</button>
+  </div>
+
+  <!-- DEMO HINT -->
+  <div class="demo-hint" id="demoHint">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 12V4M4 8l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Carica uno degli esempi qui sopra per vedere il tool in azione
+  </div>
+
+  <!-- INPUT CARD -->
+  <div class="input-card">
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label" for="doctype">Tipo di documento</label>
+        <select id="doctype">
+          <option value="preventivo">Preventivo / Offerta commerciale</option>
+          <option value="contratto">Contratto / Accordo</option>
+          <option value="email">Email / Comunicazione</option>
+          <option value="bando">Bando / Capitolato</option>
+          <option value="altro">Documento generico</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="purpose">Cosa devi fare</label>
+        <select id="purpose">
+          <option value="valuta">Valutare se accettare</option>
+          <option value="firma">Prepararsi a firmare</option>
+          <option value="negozia">Negoziare le condizioni</option>
+          <option value="risposta">Preparare una risposta</option>
+          <option value="archivia">Estrarre info chiave</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="doctext">Testo del documento</label>
+      <textarea id="doctext" placeholder="Scegli un esempio pronto qui sopra per caricare un documento di prova..." oninput="updateCount()"></textarea>
+      <div class="char-row">
+        <div class="char-count" id="charcount">0 caratteri</div>
+        <button class="btn-clear-text" id="btnClearText" onclick="clearText()">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Cancella testo
+        </button>
+      </div>
+    </div>
+    <div style="margin-top: 16px;">
+      <button class="btn-analyze" id="btnAnalyze" onclick="analyzeDoc()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M11.5 11.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M5 7h4M7 5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Analizza documento
+      </button>
+      <div class="loading-bar" id="loadBar"><div class="loading-fill" id="loadFill"></div></div>
+      <div class="loading-label" id="loadLabel">Analisi in corso…</div>
+      <div class="error-box" id="errorBox"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="source-badge" id="sourceBadge">Demo · dati simulati</div>
+    <div class="result-header">
+      <div>
+        <div class="result-title" id="resultTitle">—</div>
+        <div class="result-meta"  id="resultMeta">—</div>
+      </div>
+      <div class="risk-badge" id="riskBadge">—</div>
+    </div>
+    <div class="sections" id="sectionsContainer"></div>
+    <div class="result-actions">
+      <button class="btn-secondary" onclick="copyAnalysis()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="4" y="4" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M2 10V2.5A1.5 1.5 0 0 1 3.5 1H10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Copia analisi
+      </button>
+      <button class="btn-reset" onclick="resetTool()">↩ Nuova analisi</button>
+    </div>
+  </div>
+
+  <!-- PRIVACY NOTE -->
+  <div class="privacy-note">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 1L1.5 4v4c0 3.3 2.7 6.4 6.5 7.5C11.8 14.4 14.5 11.3 14.5 8V4L8 1z" stroke="currentColor" stroke-width="1.3"/>
+      <path d="M6 8.5l1.5 1.5L10.5 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p>
+      <strong>Come funziona la privacy.</strong> Questa è una demo: l'analisi è simulata su esempi con dati fittizi. Il testo non viene inviato a nessun servizio e questo sito non lo salva.
+    </p>
+  </div>
+
+  <footer>
+    Strumento dimostrativo · Esempi con dati fittizi ·
+    <a href="https://alessandrodardi.it/" target="_blank" rel="noopener">Portfolio →</a>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── EXAMPLE DOCUMENTS ──────────────────────────── */
+const EXAMPLES = {
+  preventivo: {
+    type: 'preventivo', purpose: 'negozia',
+    text: `OFFICINE MECCANICHE BRAMBILLA SRL
+Preventivo n. 2024-047 del 14/03/2024
+
+Spett.le Logistica Padana SpA
+Via dell'Industria 23 – 40056 Crespellano (BO)
+
+Oggetto: Fornitura e installazione sistema di scaffalatura industriale
+
+Gentili Signori,
+a seguito del sopralluogo effettuato in data 28/02/2024, siamo lieti di sottoporVi la nostra migliore offerta.
+
+DESCRIZIONE LAVORI E MATERIALI:
+
+1. Scaffalatura portapallet tipo Mecalux Monoblock – 3 campate da 5 livelli
+   Portata per livello: 1.500 kg — Dimensioni: larghezza 2.700 mm, profondità 1.100 mm, altezza utile 6.000 mm
+   Colore: grigio RAL 7035 — Quantità: 18 moduli
+   Prezzo unitario: € 380,00 + IVA — Importo: € 6.840,00 + IVA
+
+2. Montaggio e posa in opera
+   Include smontaggio e smaltimento della scaffalatura esistente
+   Tempi stimati: 3 giorni lavorativi — Importo: € 2.400,00 + IVA
+
+3. Protezioni angolari in acciaio zincato per colonne (n. 24 pz)
+   Importo: € 480,00 + IVA
+
+TOTALE PREVENTIVO: € 9.720,00 + IVA 22% (€ 2.138,40) = € 11.858,40
+
+CONDIZIONI COMMERCIALI:
+- Validità offerta: 30 giorni dalla data
+- Pagamento: 40% all'ordine, saldo a 30 gg dalla data fattura
+- Consegna: 6-8 settimane dall'ordine
+- Garanzia: 24 mesi su difetti di fabbricazione
+
+NON INCLUSO nel preventivo:
+- Opere murarie e modifiche al pavimento
+- Eventuali autorizzazioni comunali
+- Impianto antincendio a norma per scaffalature oltre i 6 metri
+
+Cordiali saluti,
+Marco Brambilla – Responsabile Commerciale`
+  },
+  contratto: {
+    type: 'contratto', purpose: 'firma',
+    text: `CONTRATTO DI MANUTENZIONE IMPIANTI — Rif. MNT-2024-112
+
+Tra TECHSERV ITALIA SRL (Fornitore) e MANIFATTURA SETA BLU SRL (Cliente)
+
+Art. 1 – Oggetto: manutenzione preventiva e correttiva degli impianti di climatizzazione.
+Art. 2 – Durata: 12 mesi dal 01/04/2024, rinnovo tacito annuale, disdetta con 60 giorni di preavviso.
+Art. 3 – Canone: € 4.800,00 + IVA annuo, fatturato trimestralmente. Mora: tasso legale + 5% dopo 15 giorni.
+Art. 4 – Incluso: 4 interventi preventivi trimestrali, sostituzione filtri e consumabili standard, reperibilità telefonica lun-ven 8-18.
+Art. 5 – Escluso: interventi straordinari per guasti (€ 75/h + € 80 diritto di chiamata), ricambi non di consumo, interventi fuori orario (maggiorazione 50%).
+Art. 6 – SLA: intervento entro 48h lavorative per guasti urgenti. Non sono previste penali per mancato rispetto dei tempi.
+Art. 7 – Responsabilità: il Fornitore risponde solo per danni da colpa grave o dolo, limite massimo pari al canone annuo (€ 4.800).
+Art. 8 – Riservatezza: standard.`
+  },
+  email: {
+    type: 'email', purpose: 'risposta',
+    text: `Da: sara.moretti@distribuzione-nord.it
+Oggetto: Proposta di collaborazione esclusiva – zona Emilia Romagna
+
+Buongiorno,
+sono la responsabile sviluppo commerciale di Distribuzione Nord Srl, attiva da 15 anni nella distribuzione di componenti termoidraulici in Emilia Romagna e Veneto. La nostra rete conta 340 installatori attivi e un fatturato nel settore di circa € 2,8 milioni nel 2023.
+
+Proponiamo:
+- Distribuzione in esclusiva per la regione Emilia Romagna per un periodo minimo di 2 anni
+- Impegno minimo d'acquisto di € 180.000 annui
+- In cambio, chiediamo uno sconto del 28% sul listino (vs 18% attuale ai non esclusivisti)
+- Supporto marketing con materiale promozionale a Vostro carico per almeno € 5.000/anno
+
+Siamo disponibili a un incontro conoscitivo a Bologna o in videoconferenza.
+
+Cordiali saluti,
+Sara Moretti — Distribuzione Nord Srl — Tel. 051 4892311`
+  },
+  locazione: {
+    type: 'contratto', purpose: 'firma',
+    text: `CONTRATTO DI LOCAZIONE AD USO COMMERCIALE — L. 392/1978
+
+Locatore: IMMOBILIARE ROSSI SAS (Giancarlo Rossi)
+Conduttore: STUDIO TECNICO FERRI (Ing. Andrea Ferri, P.IVA 02134865891)
+Immobile: ufficio 120 mq, piano primo, Via Testoni 4, Bologna — cat. C/1
+
+Durata: 6+6 anni. Prima disdetta dopo 12 mesi con preavviso di 12 mesi.
+Canone: € 1.450,00 + IVA mensili, anticipati entro il 5 del mese. Adeguamento ISTAT 75% annuo.
+Deposito cauzionale: € 4.350 (3 mensilità), infruttifero.
+
+Spese a carico conduttore: utenze, quota millesimale condominio ordinario, spese di registrazione del contratto (stimate € 290).
+Spese a carico locatore: manutenzione straordinaria condizionatore centralizzato e ascensore, imposte sull'immobile.
+
+Note: vietata sublocazione senza consenso scritto. Qualsiasi modifica strutturale necessita autorizzazione scritta. Al termine il conduttore deve ripristinare lo stato originario a proprie spese. Morosità oltre 30 giorni: facoltà di risoluzione con raccomandata.`
+  }
+};
+
+/* ─── DEMO ANALYSES ──────────────────────────────── */
+const ANALYSES = {
+  preventivo: {
+    title: 'Preventivo Brambilla – Scaffalatura industriale',
+    meta: 'Offerta commerciale · € 9.720 + IVA · Valida 30 giorni',
+    risk: 'warn', riskLabel: '⚠ Attenzione a 2 punti',
+    sections: {
+      sintesi: `Il preventivo copre fornitura e posa di scaffalatura portapallet per <strong>€ 11.858,40 IVA inclusa</strong>. L'offerta è completa nei materiali principali ma esclude voci che potrebbero incidere sul costo finale. Il pagamento anticipato del 40% su merce a 6–8 settimane merita una negoziazione.`,
+      include: ['18 moduli Mecalux con portata 1.500 kg/livello','Montaggio completo in 3 giorni lavorativi','Smontaggio e smaltimento scaffalatura esistente','24 protezioni angolari in acciaio zincato','Garanzia 24 mesi su difetti di fabbricazione'],
+      attenzione: [
+        {text:'Impianto antincendio escluso: scaffalature oltre 6 m spesso richiedono adeguamento normativo obbligatorio — verificare con VVFF prima di ordinare', level:'risk'},
+        {text:'Pagamento 40% all\'ordine su merce con consegna a 6-8 settimane: esposizione finanziaria elevata', level:'warn'}
+      ],
+      condizioni: [
+        {k:'Totale', v:'€ 9.720,00 + IVA = € 11.858,40'},{k:'Pagamento', v:'40% ordine + 60% a 30 gg fattura', flag:true},
+        {k:'Consegna', v:'6–8 settimane (non garantita)'},{k:'Garanzia', v:'24 mesi — difetti di fabbricazione'},{k:'Validità offerta', v:'30 giorni dalla data'}
+      ],
+      domande: ['L\'impianto antincendio è obbligatorio per la nostra configurazione?','Il pavimento è adeguato per il carico totale?','Possibile dilazionare il pagamento iniziale al 30%?','La consegna a 6–8 settimane è tassativa?']
+    }
+  },
+  contratto: {
+    title: 'Contratto manutenzione TechServ – Manifattura Seta Blu',
+    meta: 'Contratto di servizio · 12 mesi + rinnovo tacito · € 4.800/anno',
+    risk: 'risk', riskLabel: '🔴 Clausole da rivedere',
+    sections: {
+      sintesi: `Contratto di manutenzione climatizzazione per 12 mesi a rinnovo tacito. Il canone di <strong>€ 4.800 + IVA</strong> copre solo manutenzione preventiva e filtri; guasti, ricambi e interventi straordinari sono tutti extra. Tre clausole sono sfavorevoli e richiedono negoziazione prima della firma.`,
+      include: ['4 interventi preventivi all\'anno','Sostituzione filtri e consumabili standard','Reperibilità telefonica lun-ven 8:00–18:00'],
+      attenzione: [
+        {text:'Nessuna penale per mancato rispetto dei 48h di intervento: il fornitore non ha incentivi a rispettare i tempi (art. 6)', level:'risk'},
+        {text:'Responsabilità limitata a € 4.800: in caso di danno da negligenza, il risarcimento massimo è pari al canone annuo', level:'risk'},
+        {text:'Rinnovo tacito: disdetta da calendarizzare almeno 60 giorni prima della scadenza annuale', level:'warn'}
+      ],
+      condizioni: [
+        {k:'Canone annuo', v:'€ 4.800 + IVA (trimestrale)'},{k:'Disdetta', v:'60 giorni preavviso scritto', flag:true},
+        {k:'SLA intervento urgente', v:'48h lavorative — SENZA penali', flag:true},{k:'Tariffa guasti', v:'€ 75/h + € 80 chiamata'},
+        {k:'Limite responsabilità', v:'€ 4.800 max', flag:true}
+      ],
+      domande: ['Siete disponibili a inserire penali per mancato rispetto dei 48h?','Possiamo negoziare un massimale di responsabilità più alto?','Quante ore di intervento straordinario sono statisticamente necessarie per impianti simili?','È possibile estendere la reperibilità al sabato mattina?']
+    }
+  },
+  email: {
+    title: 'Proposta distribuzione esclusiva – Distribuzione Nord',
+    meta: 'Email commerciale · Esclusiva biennale · Emilia Romagna',
+    risk: 'warn', riskLabel: '⚠ Valutare con attenzione',
+    sections: {
+      sintesi: `Proposta di distribuzione esclusiva in Emilia Romagna con 340 installatori attivi e <strong>€ 2,8M di fatturato</strong> nel settore. In cambio di esclusiva biennale chiedono sconto al 28% (vs 18% attuale) e € 5.000/anno in materiale marketing. L'impegno minimo di € 180.000 è l'unica garanzia concreta.`,
+      include: ['Impegno minimo acquisto € 180.000 annui','Accesso a rete di 340 installatori attivi','Copertura mercato Emilia Romagna'],
+      attenzione: [
+        {text:'Nessuna penale definita per mancato rispetto dell\'impegno minimo: se non raggiungono € 180.000, cosa succede all\'esclusiva?', level:'risk'},
+        {text:'€ 5.000 di materiale marketing a vostro carico non definito nel dettaglio: chi decide cosa produrre?', level:'warn'},
+        {text:'Nessuna menzione di reportistica vendite: fondamentale per monitorare la performance dell\'esclusivista', level:'warn'}
+      ],
+      condizioni: [
+        {k:'Durata esclusiva', v:'2 anni (minimo)'},{k:'Impegno acquisto', v:'€ 180.000/anno'},{k:'Sconto richiesto', v:'28% (vs 18% attuale = +10%)', flag:true},
+        {k:'Marketing a vostro carico', v:'€ 5.000/anno', flag:true},{k:'Zona', v:'Solo Emilia Romagna'}
+      ],
+      domande: ['Quali penali se non viene raggiunto l\'impegno minimo?','Che reportistica vendite ci fornireste (frequenza, dettaglio)?','Come viene gestita la violazione dell\'esclusiva?','Perché escludete il Veneto dove avete già rete attiva?']
+    }
+  },
+  locazione: {
+    title: 'Locazione commerciale – Via Testoni 4, Bologna',
+    meta: 'Locazione uso commerciale · 120 mq · € 1.450/mese · 6+6 anni',
+    risk: 'warn', riskLabel: '⚠ 3 punti da chiarire',
+    sections: {
+      sintesi: `Contratto standard per 120 mq a Bologna, <strong>€ 1.450/mese + IVA</strong> con adeguamento ISTAT 75%. Complessivamente equilibrato, ma tre clausole meritano attenzione prima della firma: obbligo di ripristino, spese di registrazione e mancanza di tempi definiti per la restituzione del deposito.`,
+      include: ['Manutenzione straordinaria climatizzatore centralizzato a carico locatore','Manutenzione straordinaria ascensore a carico locatore','Deposito cauzionale restituibile a fine contratto'],
+      attenzione: [
+        {text:'Obbligo di ripristino "stato originario" a proprie spese: documentare fotograficamente ogni ambiente prima dell\'ingresso e definire per iscritto cosa si intende', level:'risk'},
+        {text:'Nessun termine definito per la restituzione del deposito cauzionale (€ 4.350) a fine contratto', level:'warn'},
+        {text:'Spese di registrazione (~ € 290) interamente a carico conduttore: non è la prassi più comune', level:'warn'}
+      ],
+      condizioni: [
+        {k:'Canone mensile', v:'€ 1.450 + IVA (anticipato entro il 5)'},{k:'Adeguamento', v:'ISTAT 75% annuo'},
+        {k:'Deposito cauzionale', v:'€ 4.350 (3 mensilità, infruttifero)'},{k:'Durata', v:'6+6 anni — disdetta dopo 12 mesi con 12 mesi preavviso', flag:true},
+        {k:'Spese registrazione', v:'~ € 290 — solo a carico conduttore', flag:true}
+      ],
+      domande: ['Esiste documentazione fotografica dello stato attuale da allegare al contratto?','Entro quanti giorni dalla riconsegna viene restituito il deposito?','Le spese di registrazione sono negoziabili (50/50)?','Quali sono le quote millesimali e il consuntivo spese condominiali degli ultimi 2 anni?']
+    }
+  }
+};
+
+/* ─── STATE ──────────────────────────────────────── */
+let currentExample = null;
+let lastAnalysis   = null;
+
+/* ─── INIT ───────────────────────────────────────── */
+(function init() {
+  // pulisce eventuali chiavi salvate quando esisteva la modalità Live
+  try { localStorage.removeItem('analisi_doc_apikey'); } catch(e) {}
+  updateCount();
+  setHint(true);
+})();
+
+/* ─── EXAMPLES ───────────────────────────────────── */
+function loadExample(key) {
+  const ex = EXAMPLES[key];
+  document.getElementById('doctype').value = ex.type;
+  document.getElementById('purpose').value = ex.purpose;
+  document.getElementById('doctext').value = ex.text;
+  updateCount();
+  currentExample = key;
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('errorBox').classList.remove('show');
+  setHint(false);
+}
+
+function updateCount() {
+  const n = document.getElementById('doctext').value.length;
+  document.getElementById('charcount').textContent = n.toLocaleString('it-IT') + ' caratteri';
+  setHint(n === 0);
+  document.getElementById('btnClearText').classList.toggle('visible', n > 0);
+}
+
+function clearText() {
+  document.getElementById('doctext').value = '';
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('errorBox').classList.remove('show');
+  currentExample = null;
+  updateCount();
+}
+
+function setHint(show) {
+  document.getElementById('demoHint').classList.toggle('hidden', !show);
+  document.querySelectorAll('.ex-btn').forEach(b => b.classList.toggle('pulse', show));
+}
+
+/* ─── ANALYZE ─────────────────────────────────────── */
+async function analyzeDoc() {
+  const text = document.getElementById('doctext').value.trim();
+  if (!text) { showToast('Incolla prima il testo del documento.'); return; }
+
+  const btn = document.getElementById('btnAnalyze');
+  btn.disabled = true;
+  document.getElementById('errorBox').classList.remove('show');
+  document.getElementById('results').classList.remove('visible');
+
+  showLoading(true);
+
+  const ex = EXAMPLES[currentExample];
+  if (ex && ex.text.trim() === text) {
+    await analyzeDemo();
+  } else {
+    showLoading(false);
+    btn.disabled = false;
+    showError('Questa demo analizza solo gli esempi pronti: scegline uno qui sopra. Il testo che incolli non viene analizzato né inviato.');
+    return;
+  }
+
+  showLoading(false);
+  btn.disabled = false;
+}
+
+/* ─── DEMO MODE ──────────────────────────────────── */
+async function analyzeDemo() {
+  const key = currentExample || 'preventivo';
+  const steps = [
+    [300, 20, 'Lettura documento…'],
+    [600, 55, 'Identificazione punti critici…'],
+    [400, 80, 'Strutturazione analisi…'],
+    [400, 95, 'Finalizzazione…']
+  ];
+  await runLoadingSteps(steps);
+  renderAnalysis(ANALYSES[key] || ANALYSES['preventivo']);
+}
+
+/* ─── RENDER ──────────────────────────────────────── */
+function renderAnalysis(a) {
+  lastAnalysis = a;
+
+
+  document.getElementById('resultTitle').textContent = a.title;
+  document.getElementById('resultMeta').textContent  = a.meta;
+
+  const rb = document.getElementById('riskBadge');
+  rb.className = 'risk-badge ' + (a.risk || 'warn');
+  rb.textContent = a.riskLabel;
+
+  const container = document.getElementById('sectionsContainer');
+  container.innerHTML = '';
+  container.appendChild(buildSection('sintesi',    '📄', 'Sintesi',            buildSintesi(a.sections.sintesi)));
+  container.appendChild(buildSection('include',    '✓',  'Cosa include',       buildList(a.sections.include)));
+  container.appendChild(buildSection('attenzione', '⚠',  'Punti di attenzione',buildAttenzione(a.sections.attenzione)));
+  container.appendChild(buildSection('condizioni', '≡',  'Condizioni chiave',  buildKV(a.sections.condizioni)));
+  container.appendChild(buildSection('domande',    '?',  'Domande da fare',    buildList(a.sections.domande)));
+
+  container.querySelector('.section-card').classList.add('open');
+
+  const results = document.getElementById('results');
+  results.classList.add('visible');
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ─── SECTION BUILDERS ───────────────────────────── */
+function buildSection(cls, icon, title, bodyHTML) {
+  const card = document.createElement('div');
+  card.className = 'section-card ' + cls;
+  card.innerHTML = `
+    <div class="section-head" onclick="this.closest('.section-card').classList.toggle('open')">
+      <div class="section-icon">${icon}</div>
+      <div class="section-title">${title}</div>
+      <div class="section-chevron">▼</div>
+    </div>
+    <div class="section-body">${bodyHTML}</div>`;
+  return card;
+}
+
+function buildSintesi(html) {
+  return `<p>${html || '—'}</p>`;
+}
+
+function buildList(items) {
+  if (!Array.isArray(items) || !items.length) return '<p style="color:var(--faint);font-size:13px">Nessun elemento</p>';
+  return '<ul>' + items.map(i => `<li>${i}</li>`).join('') + '</ul>';
+}
+
+function buildAttenzione(items) {
+  if (!Array.isArray(items) || !items.length)
+    return '<p style="color:var(--ok);font-size:14px">✓ Nessun punto critico rilevato</p>';
+  return items.map(item => `
+    <div class="alert ${item.level || 'warn'}">
+      ${item.level === 'risk' ? '🔴' : '⚠️'} ${item.text}
+    </div>`).join('');
+}
+
+function buildKV(items) {
+  if (!Array.isArray(items) || !items.length) return '<p style="color:var(--faint);font-size:13px">—</p>';
+  return '<div class="kv-list">' + items.map(i => `
+    <div class="kv-row">
+      <span class="kv-key">${i.k}</span>
+      <span class="kv-val${i.flag ? ' flag' : ''}">${i.v}</span>
+    </div>`).join('') + '</div>';
+}
+
+/* ─── COPY ───────────────────────────────────────── */
+function copyAnalysis() {
+  if (!lastAnalysis) return;
+  const a = lastAnalysis;
+  let t = `ANALISI DOCUMENTO – ${a.title}\n${'─'.repeat(50)}\n\n`;
+  t += `SINTESI\n${(a.sections.sintesi||'').replace(/<[^>]+>/g,'')}\n\n`;
+  t += `COSA INCLUDE\n${(a.sections.include||[]).map(i=>'• '+i).join('\n')}\n\n`;
+  t += `ATTENZIONE\n${(a.sections.attenzione||[]).map(i=>(i.level==='risk'?'🔴 ':'⚠️ ')+i.text).join('\n') || '✓ Nessun problema'}\n\n`;
+  t += `CONDIZIONI CHIAVE\n${(a.sections.condizioni||[]).map(i=>i.k+': '+i.v).join('\n')}\n\n`;
+  t += `DOMANDE DA FARE\n${(a.sections.domande||[]).map((d,n)=>(n+1)+'. '+d).join('\n')}`;
+  try {
+    navigator.clipboard.writeText(t).then(() => showToast('✓ Copiato negli appunti'));
+  } catch(e) { showToast('Copia manuale: seleziona il testo'); }
+}
+
+function resetTool() {
+  document.getElementById('doctext').value = '';
+  document.getElementById('charcount').textContent = '0 caratteri';
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('errorBox').classList.remove('show');
+  currentExample = null; lastAnalysis = null;
+  setHint(true);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ─── LOADING HELPERS ────────────────────────────── */
+function showLoading(on) {
+  document.getElementById('loadBar').classList.toggle('active', on);
+  document.getElementById('loadLabel').classList.toggle('active', on);
+  if (!on) { setLoadFill(0); setLoadLabel('Analisi in corso…'); }
+}
+function setLoadFill(pct)  { document.getElementById('loadFill').style.width  = pct + '%'; }
+function setLoadLabel(msg) { document.getElementById('loadLabel').textContent = msg; }
+
+async function runLoadingSteps(steps) {
+  for (const [ms, pct, msg] of steps) {
+    await delay(ms);
+    setLoadFill(pct);
+    setLoadLabel(msg);
+  }
+  await delay(300);
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = '❌ ' + msg;
+  box.classList.add('show');
+}
+
+/* ─── TOAST ──────────────────────────────────────── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

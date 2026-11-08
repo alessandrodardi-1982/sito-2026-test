@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executive Dashboard — CEO View</title>
+<link rel="stylesheet" href="fonts/dashboard-fonts.css">
+<script src="vendor/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy-900:#00112b;--navy-800:#00183a;--navy-750:#031f44;--navy-700:#062a52;--navy-600:#0a3a6b;
+  --line:rgba(124,194,255,0.12);--line-2:rgba(124,194,255,0.22);
+  --accent:#2ca1fe;--accent-2:#5cb8ff;--accent-3:#8fccff;--accent-deep:#1d6fc2;
+  --glow:rgba(44,161,254,0.45);
+  --t1:#eef4fb;--t2:#9fbbd9;--t3:#5d7da0;
+  --pos:#34d399;--neg:#fb7185;--amber:#fbbf24;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy-900);color:var(--t1);min-height:100vh;-webkit-font-smoothing:antialiased;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 55% at 8% -5%, rgba(44,161,254,0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(29,111,194,0.14) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(44,161,254,0.08) 0%, transparent 60%);
+}
+
+/* HEADER */
+.header{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.5rem 3rem;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(0,24,58,0.94), rgba(0,17,43,0.8));
+  backdrop-filter:blur(12px);overflow:hidden;
+}
+.header::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg, transparent, var(--accent) 35%, var(--accent-2) 50%, var(--accent) 65%, transparent);opacity:.7;}
+.hex-deco{position:absolute;top:50%;right:240px;transform:translateY(-50%);opacity:.32;pointer-events:none;}
+.hdr-left{display:flex;align-items:center;gap:1rem;z-index:1;}
+.logo-box{height:48px;width:48px;border-radius:50%;overflow:hidden;border:2px solid var(--line-2);box-shadow:0 0 20px var(--glow);flex-shrink:0;}
+.logo-box img{width:100%;height:100%;object-fit:cover;}
+.hdr-title{font-family:'Sora',sans-serif;font-size:1.35rem;font-weight:800;letter-spacing:-.02em;line-height:1;}
+.hdr-title .accent{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hdr-sub{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--t3);margin-top:.35rem;letter-spacing:.02em;}
+.hdr-right{display:flex;align-items:center;gap:1.2rem;z-index:1;}
+.year-tag{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent-2);background:rgba(44,161,254,0.1);border:1px solid rgba(44,161,254,0.22);padding:.3rem .7rem;border-radius:.5rem;}
+.badge-live{display:flex;align-items:center;gap:.5rem;padding:.4rem .9rem;border-radius:2rem;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);font-size:.72rem;color:var(--pos);font-weight:600;letter-spacing:.06em;}
+.badge-live .dot{width:6px;height:6px;border-radius:50%;background:var(--pos);box-shadow:0 0 8px var(--pos);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(1.5);}}
+
+/* CONTAINER */
+.container{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:2.4rem 3rem 4rem;}
+
+/* SECTION LABEL */
+.sec-label{font-family:'Sora',sans-serif;font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--t2);margin:2.2rem 0 1.1rem;display:flex;align-items:center;gap:.8rem;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--line);}
+
+/* CARD BASE (kpi) */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1.3rem;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.3rem;}
+.kpi-card{
+  position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:200px;
+  background:linear-gradient(160deg, var(--navy-700) 0%, var(--navy-750) 100%);
+  border:1px solid var(--line);border-radius:1.1rem;padding:1.65rem 1.7rem;
+  transition:transform .28s ease, border-color .28s ease, box-shadow .28s ease;
+  animation:fadeUp .55s cubic-bezier(.2,.7,.3,1) forwards;opacity:0;
+}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2));}
+.kpi-card::after{content:'';position:absolute;top:-40%;right:-30%;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle, var(--glow) 0%, transparent 70%);opacity:.42;transition:opacity .3s ease;}
+.kpi-card:hover{transform:translateY(-4px);border-color:var(--line-2);box-shadow:0 14px 40px rgba(0,0,0,.45), 0 0 26px var(--glow);}
+.kpi-card:hover::after{opacity:.85;}
+.kpi-icon{width:42px;height:42px;border-radius:.7rem;display:flex;align-items:center;justify-content:center;background:rgba(44,161,254,0.12);color:var(--accent-2);border:1px solid rgba(44,161,254,0.25);margin-bottom:1.3rem;flex-shrink:0;}
+.kpi-label{font-size:.69rem;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.13em;margin-bottom:.65rem;}
+.kpi-value{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.75rem;letter-spacing:-.02em;line-height:1;color:var(--t1);text-shadow:0 0 22px rgba(44,161,254,0.18);white-space:nowrap;}
+.kpi-trend{margin-top:auto;padding-top:1.05rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--t3);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.kpi-trend .mark{font-weight:600;padding:.22rem .5rem;border-radius:.45rem;white-space:nowrap;}
+.kpi-trend .mark.pos{color:var(--pos);background:rgba(52,211,153,0.12);}
+.kpi-trend .mark.info{color:var(--accent-2);background:rgba(44,161,254,0.12);}
+.kpi-trend .mark.neutral{color:var(--amber);background:rgba(251,191,36,0.12);}
+
+/* CHARTS */
+.charts-a{display:grid;grid-template-columns:1.9fr 1fr;gap:1.3rem;}
+.charts-b{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-top:1.3rem;}
+.chart-card{
+  position:relative;background:linear-gradient(160deg, var(--navy-750) 0%, rgba(0,24,58,0.6) 100%);
+  border:1px solid var(--line);border-radius:1.1rem;padding:1.7rem;
+  transition:border-color .3s ease, box-shadow .3s ease;
+  animation:fadeUp .55s cubic-bezier(.2,.7,.3,1) forwards;opacity:0;
+}
+.chart-card:hover{border-color:var(--line-2);box-shadow:0 0 30px rgba(44,161,254,0.1);}
+.chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.3rem;}
+.chart-title{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:.3rem;letter-spacing:-.01em;}
+.chart-subtitle{font-size:.72rem;color:var(--t3);}
+.chart-tag{font-family:'JetBrains Mono',monospace;font-size:.64rem;color:var(--accent-2);background:rgba(44,161,254,0.1);border:1px solid rgba(44,161,254,0.22);padding:.28rem .6rem;border-radius:.5rem;white-space:nowrap;}
+.chart-container{position:relative;width:100%;}
+.chart-container.tall{height:300px;}
+.chart-container.donut{height:300px;max-width:300px;margin:0 auto;display:flex;align-items:center;}
+.chart-container.mid{height:270px;}
+
+/* FOOTER */
+.footer{text-align:center;padding:2.2rem;font-family:'JetBrains Mono',monospace;font-size:.71rem;color:var(--t3);position:relative;z-index:1;}
+.footer span{color:var(--accent-2);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+@media(max-width:1100px){
+  .grid-4{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:repeat(2,1fr);}
+  .charts-a,.charts-b{grid-template-columns:1fr;}
+  .hex-deco{display:none;}
+}
+@media(max-width:600px){
+  .header,.container{padding-left:1.25rem;padding-right:1.25rem;}
+  .grid-4,.grid-3{grid-template-columns:1fr;}
+  .hdr-title{font-size:1.1rem;}
+}
+</style>
+</head>
+<body>
+
+
+
+<header class="header">
+  <svg class="hex-deco" width="220" height="120" viewBox="0 0 220 120" fill="none">
+    <g stroke="var(--accent)" stroke-width="1.2" opacity="0.5">
+      <polygon points="40,10 70,27 70,61 40,78 10,61 10,27" fill="rgba(44,161,254,0.05)"/>
+      <polygon points="100,2 130,19 130,53 100,70 70,53 70,19" fill="rgba(44,161,254,0.08)"/>
+      <polygon points="160,28 190,45 190,79 160,96 130,79 130,45" fill="rgba(44,161,254,0.04)"/>
+    </g>
+  </svg>
+  <div class="hdr-left">
+    <div class="logo-box" style="display:grid;place-items:center;background:rgba(44,161,254,0.12);"><svg viewBox="20 -6 230 200" width="100%" height="100%" role="img" aria-label="Alessandro Dardi" fill="none" stroke="#5cb8ff" stroke-linecap="square" stroke-linejoin="miter"><path d="M32 154 L83 34 L134 154" stroke-width="13"/><path d="M54 108 L111 108" stroke-width="9"/><path d="M151 36 L151 153" stroke-width="13"/><path d="M151 39 L180 39 C221 39 239 61 239 94 C239 128 220 151 180 151 L151 151" stroke-width="13"/></svg></div>
+    <div>
+      <div class="hdr-title">Executive <span class="accent">Dashboard</span></div>
+      <div class="hdr-sub">CEO VIEW &middot; 2014–2017 &middot; 9.994 transazioni</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <span class="year-tag">FY 2017</span>
+    <div class="badge-live"><span class="dot"></span>DATI DI ESEMPIO</div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="sec-label">Risultati chiave</div>
+
+  <section class="grid-4">
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12"/><path d="M4 14h9"/><path d="M19 6a7.7 7.7 0 00-5.2-2A7.9 7.9 0 006 12a7.9 7.9 0 007.8 8 7.7 7.7 0 005.2-2"/></svg></div>
+      <div class="kpi-label">Fatturato Totale</div>
+      <div class="kpi-value" data-target="2.30" data-prefix="€ " data-suffix="M" data-decimals="2">€ 0M</div>
+      <div class="kpi-trend"><span class="mark pos">&#9650; 20,4%</span> vs 2016</div>
+    </article>
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+      <div class="kpi-label">Profitto Netto</div>
+      <div class="kpi-value" data-target="286" data-prefix="€ " data-suffix="K" data-decimals="0">€ 0K</div>
+      <div class="kpi-trend"><span class="mark pos">&#9650; 14,2%</span> vs 2016</div>
+    </article>
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="2"/><circle cx="15" cy="15" r="2"/><line x1="18" y1="4" x2="4" y2="18"/></svg></div>
+      <div class="kpi-label">Margine Netto</div>
+      <div class="kpi-value" data-target="12.5" data-suffix="%" data-decimals="1">0%</div>
+      <div class="kpi-trend"><span class="mark info">12,7% nel 2017</span> vs 13,4% nel 2016</div>
+    </article>
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <div class="kpi-label">Clienti Attivi</div>
+      <div class="kpi-value" data-target="793" data-decimals="0">0</div>
+      <div class="kpi-trend"><span class="mark info">5.009 ordini</span> totali nel periodo</div>
+    </article>
+  </section>
+
+  <div class="sec-label">Performance operativa</div>
+
+  <section class="grid-3">
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+      <div class="kpi-label">Valore Medio Ordine</div>
+      <div class="kpi-value">€ 459</div>
+      <div class="kpi-trend"><span class="mark info">per ordine</span> medio sul periodo</div>
+    </article>
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <div class="kpi-label">Unità Vendute</div>
+      <div class="kpi-value">37.873</div>
+      <div class="kpi-trend"><span class="mark info">7,6 / ordine</span> pezzi spediti</div>
+    </article>
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="kpi-label">Tempo Consegna Medio</div>
+      <div class="kpi-value">4,0 gg</div>
+      <div class="kpi-trend"><span class="mark info">59,7%</span> Standard Class</div>
+    </article>
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+      <div class="kpi-label">Regione Top (margine)</div>
+      <div class="kpi-value">West</div>
+      <div class="kpi-trend"><span class="mark neutral">14,9% margine</span> € 725K fatturato</div>
+    </article>
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></div>
+      <div class="kpi-label">Categoria Più Redditizia</div>
+      <div class="kpi-value">Technology</div>
+      <div class="kpi-trend"><span class="mark neutral">17,4% margine</span> € 836K fatturato</div>
+    </article>
+    <article class="kpi-card">
+      <div class="kpi-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 010 20"/><line x1="12" y1="12" x2="12" y2="2"/></svg></div>
+      <div class="kpi-label">Segment Leader</div>
+      <div class="kpi-value">Consumer</div>
+      <div class="kpi-trend"><span class="mark neutral">11,5% margine</span> 2.586 ordini</div>
+    </article>
+  </section>
+
+  <div class="sec-label">Trend &amp; analisi</div>
+
+  <section class="charts-a">
+    <div class="chart-card">
+      <div class="chart-head">
+        <div><h2 class="chart-title">Crescita Annuale — Fatturato vs Profitto</h2><p class="chart-subtitle">Andamento 2014–2017: lieve calo nel 2015, poi crescita costante</p></div>
+        <span class="chart-tag">+20% YoY</span>
+      </div>
+      <div class="chart-container tall"><canvas id="lineChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-head">
+        <div><h2 class="chart-title">Mix per Segmento</h2><p class="chart-subtitle">Consumer guida con 50,6%</p></div>
+      </div>
+      <div class="chart-container donut"><canvas id="donutSeg"></canvas></div>
+    </div>
+  </section>
+
+  <section class="charts-b">
+    <div class="chart-card">
+      <div class="chart-head">
+        <div><h2 class="chart-title">Fatturato &amp; Margine per Categoria</h2><p class="chart-subtitle">Technology il margine più alto (17,4%), Furniture il più basso (2,5%)</p></div>
+        <span class="chart-tag">€ / margine %</span>
+      </div>
+      <div class="chart-container mid"><canvas id="barCat"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-head">
+        <div><h2 class="chart-title">Performance Regionale</h2><p class="chart-subtitle">West domina per volume e margine (14,9%), Central è la più debole (7,9%)</p></div>
+        <span class="chart-tag">€ / regione</span>
+      </div>
+      <div class="chart-container mid"><canvas id="barReg"></canvas></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">Dashboard dimostrativa &middot; dataset di esempio Sample Superstore &middot; <span>9.994 transazioni</span> &middot; Powered by Chart.js</footer>
+
+<script>
+
+  // count-up (solo valori con data-target)
+  function animateValue(el){
+    const target=parseFloat(el.dataset.target);
+    const dec=parseInt(el.dataset.decimals||'0');
+    const pre=el.dataset.prefix||'';const suf=el.dataset.suffix||'';
+    const dur=1400;const start=performance.now();
+    const fmt=n=>n.toLocaleString('it-IT',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+    function step(now){const p=Math.min((now-start)/dur,1);const e=1-Math.pow(1-p,3);
+      el.textContent=pre+fmt(target*e)+suf;
+      if(p<1)requestAnimationFrame(step);else el.textContent=pre+fmt(target)+suf;}
+    requestAnimationFrame(step);
+  }
+  const io=new IntersectionObserver((ents)=>{ents.forEach(e=>{if(e.isIntersecting){animateValue(e.target);io.unobserve(e.target);}});},{threshold:.4});
+  document.querySelectorAll('.kpi-value[data-target]').forEach(el=>io.observe(el));
+
+  // Chart defaults
+  Chart.defaults.color='#9fbbd9';
+  Chart.defaults.borderColor='rgba(124,194,255,0.06)';
+  Chart.defaults.font.family="'DM Sans', sans-serif";
+  const TT={backgroundColor:'#031f44',titleColor:'#eef4fb',bodyColor:'#9fbbd9',borderColor:'rgba(44,161,254,0.4)',borderWidth:1,cornerRadius:10,padding:12,
+    titleFont:{family:"'Sora', sans-serif",weight:'700'},bodyFont:{family:"'JetBrains Mono', monospace"}};
+  const eK=v=>'€'+(v/1000).toFixed(0)+'K';
+
+  // LINE
+  new Chart(document.getElementById('lineChart'),{
+    type:'line',
+    data:{labels:['2014','2015','2016','2017'],datasets:[
+      {label:'Fatturato (€)',data:[484247,470533,609206,733215],borderColor:'#2ca1fe',borderWidth:2.5,fill:true,tension:.35,
+        backgroundColor:ctx=>{const{ctx:c,chartArea}=ctx.chart;if(!chartArea)return'rgba(44,161,254,0.2)';const g=c.createLinearGradient(0,chartArea.top,0,chartArea.bottom);g.addColorStop(0,'rgba(44,161,254,0.35)');g.addColorStop(1,'rgba(44,161,254,0)');return g;},
+        pointBackgroundColor:'#5cb8ff',pointBorderColor:'#00183a',pointBorderWidth:2,pointRadius:5,pointHoverRadius:8},
+      {label:'Profitto (€)',data:[49544,61619,81795,93439],borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0)',borderWidth:2,fill:false,tension:.35,borderDash:[5,3],
+        pointBackgroundColor:'#34d399',pointBorderColor:'#00183a',pointBorderWidth:2,pointRadius:4,pointHoverRadius:7}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{padding:16,usePointStyle:true,pointStyle:'circle',font:{size:11}}},
+        tooltip:{...TT,callbacks:{label:ctx=>'€ '+ctx.parsed.y.toLocaleString('it-IT')}}},
+      scales:{y:{beginAtZero:false,grid:{color:'rgba(124,194,255,0.06)'},ticks:{callback:eK,font:{family:"'JetBrains Mono', monospace",size:10}}},
+        x:{grid:{display:false},ticks:{font:{size:11}}}},
+      animation:{duration:1400,easing:'easeOutQuart'}}
+  });
+
+  // DONUT
+  new Chart(document.getElementById('donutSeg'),{
+    type:'doughnut',
+    data:{labels:['Consumer','Corporate','Home Office'],datasets:[{data:[1161401,706146,429653],backgroundColor:['#2ca1fe','#1d6fc2','#8fccff'],borderColor:'#031f44',borderWidth:3,hoverOffset:12}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyle:'circle',font:{size:11},color:'#9fbbd9'}},
+        tooltip:{...TT,callbacks:{label:ctx=>{const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return ctx.label+': €'+ctx.parsed.toLocaleString('it-IT')+' ('+(ctx.parsed/t*100).toFixed(1)+'%)';}}}},
+      animation:{animateRotate:true,duration:1200,easing:'easeOutQuart'}}
+  });
+
+  // BAR categorie + linea margine
+  new Chart(document.getElementById('barCat'),{
+    type:'bar',
+    data:{labels:['Furniture','Office Supplies','Technology'],datasets:[
+      {label:'Fatturato (€)',data:[742000,719047,836154],yAxisID:'y',borderRadius:8,borderSkipped:false,maxBarThickness:70,
+        backgroundColor:ctx=>{const{ctx:c,chartArea}=ctx.chart;if(!chartArea)return'#2ca1fe';const g=c.createLinearGradient(0,chartArea.bottom,0,chartArea.top);g.addColorStop(0,'rgba(29,111,194,0.4)');g.addColorStop(1,'rgba(92,184,255,0.95)');return g;},borderColor:'#5cb8ff',borderWidth:1.5},
+      {label:'Margine %',data:[2.5,17.0,17.4],type:'line',yAxisID:'y2',borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,0.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#fbbf24',pointBorderColor:'#00183a',pointBorderWidth:1.5,fill:true,tension:.3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{padding:12,usePointStyle:true,pointStyle:'circle',font:{size:10}}},tooltip:{...TT}},
+      scales:{y:{beginAtZero:true,grid:{color:'rgba(124,194,255,0.06)'},ticks:{callback:eK,font:{family:"'JetBrains Mono', monospace",size:10}}},
+        y2:{position:'right',grid:{display:false},min:0,max:25,ticks:{callback:v=>v+'%',font:{family:"'JetBrains Mono', monospace",size:10}}},
+        x:{grid:{display:false},ticks:{font:{size:11,weight:'600'},color:'#eef4fb'}}},
+      animation:{duration:1200,easing:'easeOutQuart'}}
+  });
+
+  // BAR regioni orizzontale
+  new Chart(document.getElementById('barReg'),{
+    type:'bar',
+    data:{labels:['West','East','Central','South'],datasets:[{label:'Fatturato (€)',data:[725458,678781,501240,391722],borderRadius:8,borderSkipped:false,maxBarThickness:34,
+      backgroundColor:['rgba(44,161,254,0.95)','rgba(44,161,254,0.72)','rgba(44,161,254,0.5)','rgba(44,161,254,0.3)'],borderColor:'#5cb8ff',borderWidth:1}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:ctx=>'€ '+ctx.parsed.x.toLocaleString('it-IT')}}},
+      scales:{x:{beginAtZero:true,grid:{color:'rgba(124,194,255,0.06)'},ticks:{callback:eK,font:{family:"'JetBrains Mono', monospace",size:10}}},
+        y:{grid:{display:false},ticks:{font:{size:12,weight:'600'},color:'#eef4fb'}}},
+      animation:{duration:1200,easing:'easeOutQuart'}}
+  });
+</script>
+<a href="https://alessandrodardi.it" id="btn-portfolio" style="position:fixed;bottom:20px;left:20px;z-index:9999;display:inline-flex;align-items:center;gap:7px;padding:9px 16px;background:rgba(0,20,45,0.90);border:1px solid rgba(46,155,236,0.4);border-radius:8px;color:#cddff0;text-decoration:none;font-family:'Hanken Grotesk','DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.01em;backdrop-filter:blur(10px);box-shadow:0 4px 16px rgba(0,0,0,0.45);transition:all 0.2s ease;" onmouseover="this.style.borderColor='rgba(46,155,236,0.85)';this.style.color='#fff';this.style.background='rgba(0,35,70,0.96)'" onmouseout="this.style.borderColor='rgba(46,155,236,0.4)';this.style.color='#cddff0';this.style.background='rgba(0,20,45,0.90)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Portfolio</a>
+</body>
+</html>

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Briefing Operativo — Alessandro Dardi</title>
+  <link rel="stylesheet" href="../fonts/dashboard-fonts.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy-deep:   #070d1a;
+      --navy:        #0c1729;
+      --navy-card:   #101f36;
+      --accent:      #2ca1fe;
+      --accent-soft: rgba(44,161,254,0.14);
+      --real:        #33d6a6;
+      --real-soft:   rgba(51,214,166,0.12);
+      --text:        #eef3fa;
+      --text-dim:    #9fb0c6;
+      --border:      rgba(255,255,255,0.08);
+      --green:       #33d6a6;
+      --orange:      #f59e0b;
+      --red:         #f87171;
+      --purple:      #a78bfa;
+      --radius:      10px;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(ellipse at top, var(--navy) 0%, var(--navy-deep) 65%);
+      min-height: 100vh;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      background: rgba(12, 23, 41, 0.94);
+      backdrop-filter: blur(10px);
+    }
+    .header-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .header-brand {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .header-brand:hover { color: var(--accent); }
+    .header-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .header-sub {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+
+    /* ── DEMO BANNER ────────────────────────── */
+    .demo-banner {
+      background: rgba(245,158,11,0.13);
+      border-top: 1px solid rgba(245,158,11,0.25);
+      padding: 8px 24px;
+      font-size: 12px;
+      color: #fbbf24;
+      text-align: center;
+    }
+    .demo-banner strong { font-weight: 600; }
+    .demo-cta { display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; padding:10px 24px; background:var(--accent-soft); border-top:1px solid var(--border); font-size:13px; color:var(--text-dim); }
+    .btn-demo:disabled { opacity:.65; cursor:wait; }
+    .demo-active { outline:2px solid var(--real); outline-offset:2px; border-radius:8px; }
+
+    /* ── LAYOUT ─────────────────────────────── */
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 110px 24px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── CARD ───────────────────────────────── */
+    .card {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .card-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    /* ── FORM ELEMENTS ──────────────────────── */
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      outline: none;
+      transition: border-color .15s;
+    }
+    input[type="text"]::placeholder { color: var(--text-dim); opacity: 0.6; }
+    input[type="text"]:focus { border-color: var(--accent); }
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 540px) { .row-2 { grid-template-columns: 1fr; } }
+
+    /* ── BUTTONS ────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      border-radius: 6px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s, opacity .15s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1a90ec; }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-ghost {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .btn-demo {
+      background: var(--real-soft);
+      color: var(--real);
+      border: 1px solid rgba(51,214,166,0.25);
+      font-size: 13px;
+      padding: 8px 14px;
+    }
+    .btn-demo:hover { background: rgba(51,214,166,0.2); }
+    .btn-lg {
+      padding: 13px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* ── DRAG & DROP ────────────────────────── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      position: relative;
+    }
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-icon { font-size: 32px; margin-bottom: 10px; }
+    .drop-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .drop-hint { font-size: 13px; color: var(--text-dim); }
+
+    .file-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .file-sep { font-size: 12px; color: var(--text-dim); }
+
+    /* ── PREVIEW TABLE ──────────────────────── */
+    .preview-wrap {
+      margin-top: 20px;
+      overflow-x: auto;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .preview-meta {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th {
+      background: rgba(255,255,255,0.04);
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── TOGGLE ─────────────────────────────── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.1);
+      border-radius: 22px;
+      transition: .2s;
+      cursor: pointer;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: .2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+    /* ── LOADER ─────────────────────────────── */
+    .loader {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-dim);
+      padding: 16px 0;
+      justify-content: center;
+    }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── REPORT ─────────────────────────────── */
+    .report-header {
+      background: linear-gradient(135deg, #1a6bbf 0%, #0c4a8a 100%);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 20px 24px;
+    }
+    .report-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+    .report-meta { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+    .report-body { padding: 0; }
+    .report-section {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+    }
+    .report-section:last-child { border-bottom: none; }
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 12px;
+    }
+    .section-label.green  { color: var(--green); }
+    .section-label.orange { color: var(--orange); }
+    .section-label.blue   { color: var(--accent); }
+    .section-label.dark   { color: var(--text); }
+    .section-label.purple { color: var(--purple); }
+
+    .exec-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .report-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .report-list li {
+      display: flex;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .report-list li::before {
+      content: '→';
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .list-green li::before  { color: var(--green); }
+    .list-orange li::before { color: var(--orange); }
+    .list-blue li::before   { color: var(--accent); }
+    .list-purple li::before { color: var(--purple); }
+
+    .numbered-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      counter-reset: item;
+    }
+    .numbered-list li {
+      display: flex;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text);
+      counter-increment: item;
+    }
+    .numbered-list li::before {
+      content: counter(item) '.';
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+      min-width: 18px;
+    }
+
+    .empty-note {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 10px;
+      padding: 20px 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* ── ERROR ──────────────────────────────── */
+    .error-box {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 6px;
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--red);
+      display: none;
+      margin-bottom: 12px;
+    }
+
+    /* ── DEMO BADGE ─────────────────────────── */
+    .demo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--real);
+      background: var(--real-soft);
+      border: 1px solid rgba(51,214,166,0.2);
+      border-radius: 20px;
+      padding: 3px 10px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ── FOOTER ─────────────────────────────── */
+    footer {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px 32px;
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      text-align: center;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media print {
+      header, .card:not(#report-card), footer, .report-actions { display: none !important; }
+      #report-card { box-shadow: none; border: none; }
+      body, main { background: #fff; padding: 0; color: #111; }
+      .report-section { border-bottom: 1px solid #e0e0e0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="https://alessandrodardi.it/" class="header-brand">← Portfolio</a>
+    <span class="header-title">Briefing Operativo</span>
+    <span class="header-sub">Analisi settimanale KPI in 30 secondi</span>
+  </div>
+  <div class="demo-banner">
+    ⚠ <strong>Strumento dimostrativo</strong> — Dati fittizi e azienda simulata. In questa demo online non c'è nessuna AI collegata: il briefing è preparato in anticipo per i dati di esempio.
+  </div>
+  <div class="demo-cta">
+    <span>Guarda il briefing compilarsi da solo, come farebbe un responsabile di reparto.</span>
+    <button class="btn btn-demo" id="demo-run-btn" onclick="avviaDemo()">▶ Avvia compilazione simulata</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── STEP 1: FILE ── -->
+  <div class="card">
+    <div class="card-title">1 — Carica il file KPI</div>
+    <div class="drop-zone" id="drop-zone" onclick="showError('In questa demo online si usa il file di esempio: premi \u201cProva con dati demo\u201d.')">
+      <div class="drop-icon">📂</div>
+      <div class="drop-label">Qui si trascina il file Excel o CSV con i KPI</div>
+      <div class="drop-hint">nella demo online il file è quello di esempio · nessun file viene letto</div>
+    </div>
+    <div class="file-actions">
+      <span class="file-sep">oppure</span>
+      <button class="btn btn-demo" onclick="loadDemoData()">▶ Prova con dati demo</button>
+    </div>
+    <div id="preview-block" style="display:none; margin-top:20px;">
+      <p class="preview-meta" id="preview-meta"></p>
+      <div class="preview-wrap">
+        <table id="preview-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: CONFIG ── -->
+  <div class="card">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <div class="card-title" style="margin-bottom:0;">2 — Contesto (opzionale)</div>
+      <button class="btn btn-demo" style="font-size:12px; padding:6px 12px;" onclick="fillDemoContext()">▶ Dati demo</button>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label for="week-label">Settimana di riferimento</label>
+        <input type="text" id="week-label" placeholder="es. 30/09 – 06/10/2026" />
+      </div>
+      <div class="field">
+        <label for="dept-label">Azienda / Reparto</label>
+        <input type="text" id="dept-label" placeholder="es. Produzione – Linea 3" />
+      </div>
+    </div>
+    <div class="field">
+      <label for="target-label">Target settimanale principale</label>
+      <input type="text" id="target-label" placeholder="es. OEE > 85%, tempo medio ticket < 4h" />
+    </div>
+    <div class="field">
+      <label for="notes-label">Note aggiuntive per l'AI</label>
+      <input type="text" id="notes-label" placeholder="es. lunedì era festivo, ignora il calo del giorno" />
+    </div>
+    <div class="toggle-row">
+      <label class="toggle">
+        <input type="checkbox" id="exec-toggle" checked />
+        <span class="toggle-slider"></span>
+      </label>
+      <span>Includi executive summary (1 riga per il CEO)</span>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: GENERA ── -->
+  <div>
+    <div class="error-box" id="error-box"></div>
+    <div class="loader" id="loader" style="display:none">
+      <div class="spinner"></div>
+      <span>Preparazione del briefing…</span>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="generateBriefing()" id="gen-btn">
+      ⚡ Genera briefing
+    </button>
+  </div>
+
+  <!-- ── REPORT ── -->
+  <div class="card" id="report-card" style="padding:0; overflow:hidden; display:none">
+    <div class="report-header">
+      <div class="report-title">📊 Briefing Operativo</div>
+      <div class="report-meta" id="report-meta"></div>
+    </div>
+    <div class="report-body" id="report-body"></div>
+    <div class="report-actions">
+      <button class="btn btn-ghost" onclick="copyReport()">📋 Copia testo</button>
+      <button class="btn btn-ghost" onclick="window.print()">🖨️ Stampa / Salva PDF</button>
+      <button class="btn btn-ghost" onclick="resetReport()">🔄 Nuovo report</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Demo con dati fittizi · Nessun dato inviato a servizi esterni ·
+  Costruito da <a href="https://alessandrodardi.it/">Alessandro Dardi</a>
+</footer>
+
+<script>
+  /* ── GLOBALS ─────────────────────────────── */
+  let parsedData = null;
+
+  /* ── DEMO DATA ───────────────────────────── */
+  const DEMO_DATA = {
+    headers: ['Data', 'OEE (%)', 'Pezzi OK', 'Scarti', 'Fermi (min)', 'Consumo kWh', 'Ticket aperti', 'Ticket chiusi', 'Tempo medio ticket (h)'],
+    rows: [
+      ['30/09/2026 Lun', 87, 1240, 12,  15,  1850, 3, 4, 3.2],
+      ['01/10/2026 Mar', 91, 1310,  8,   0,  1920, 2, 3, 2.8],
+      ['02/10/2026 Mer', 88, 1280, 10,  25,  1890, 4, 3, 3.5],
+      ['03/10/2026 Gio', 93, 1350,  6,   0,  2150, 5, 6, 2.1],
+      ['04/10/2026 Ven', 85, 1190, 14,  40,  1780, 3, 2, 4.1],
+      ['05/10/2026 Sab', 72,  890, 22,  65,  1340, 2, 1, 5.3],
+      ['06/10/2026 Dom',  0,    0,  0, 480,   320, 0, 0,   0],
+    ],
+    totalRows: 7
+  };
+
+  function loadDemoData() {
+    parsedData = DEMO_DATA;
+    renderPreview(DEMO_DATA.headers, DEMO_DATA.rows, 'kpi_demo_30set-06ott.csv', true);
+    hideError();
+  }
+
+  function fillDemoContext() {
+    document.getElementById('week-label').value   = '30/09 – 06/10/2026';
+    document.getElementById('dept-label').value   = 'Metalmec Srl – Produzione Linea 2';
+    document.getElementById('target-label').value = 'OEE > 85%, scarti < 15 pezzi/giorno, ticket chiusi entro 4h';
+    document.getElementById('notes-label').value  = 'Domenica fermo programmato per manutenzione impianto. Sabato turno ridotto con operatori junior.';
+  }
+
+  function renderPreview(headers, rows, filename, isDemo) {
+    const preview = rows.slice(0, 7);
+    let html = '<thead><tr>' + headers.map(h => `<th>${escHtml(h)}</th>`).join('') + '</tr></thead>';
+    html += '<tbody>' + preview.map(r =>
+      '<tr>' + headers.map((_, i) => `<td>${escHtml(String(r[i] ?? ''))}</td>`).join('') + '</tr>'
+    ).join('') + '</tbody>';
+    document.getElementById('preview-table').innerHTML = html;
+    const demoBadge = isDemo ? `<span class="demo-badge">● DEMO</span>` : '';
+    document.getElementById('preview-meta').innerHTML =
+      `📄 ${escHtml(filename)} · ${rows.length} righe · ${headers.length} colonne${demoBadge}`;
+    document.getElementById('preview-block').style.display = 'block';
+  }
+
+  /* ── GENERATE ────────────────────────────── */
+  async function generateBriefing() {
+    hideError();
+    if (!parsedData) { showError('Premi prima \u201cProva con dati demo\u201d per caricare i KPI di esempio.'); return; }
+
+    const week     = document.getElementById('week-label').value.trim();
+    const dept     = document.getElementById('dept-label').value.trim();
+    const target   = document.getElementById('target-label').value.trim();
+    const notes    = document.getElementById('notes-label').value.trim();
+    const withExec = document.getElementById('exec-toggle').checked;
+
+    setLoading(true);
+    document.getElementById('report-card').style.display = 'none';
+
+    try {
+      await new Promise(r => setTimeout(r, _fast ? 200 : 2500));
+      renderReport(DEMO_REPORT, week, dept, withExec);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /* ── RENDER REPORT ───────────────────────── */
+  function renderReport(data, week, dept, withExec) {
+    const now = new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' });
+    let meta = `Esempio preparato in anticipo · ${now}`;
+    if (week) meta = `Settimana ${week} · ` + meta;
+    if (dept) meta += ` · ${dept}`;
+    document.getElementById('report-meta').textContent = meta;
+
+    let html = '';
+    if (withExec && data.executive_summary)
+      html += section('📌 Executive Summary', 'dark', `<p class="exec-text">"${escHtml(data.executive_summary)}"</p>`);
+    html += section('✅ Cosa ha funzionato',     'green',  listHtml(data.cosa_ha_funzionato, 'list-green'));
+    html += section('⚠️ Cosa non ha funzionato', 'orange', listHtml(data.cosa_non_ha_funzionato, 'list-orange'));
+    if (data.anomalie?.length)
+      html += section('🔍 Anomalie / Pattern', 'purple', listHtml(data.anomalie, 'list-purple'));
+    html += section('📋 Punti da portare in riunione', 'blue', numberedListHtml(data.punti_riunione));
+
+    document.getElementById('report-body').innerHTML = html;
+    document.getElementById('report-card').style.display = 'block';
+    document.getElementById('report-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function section(title, colorClass, inner) {
+    return `<div class="report-section"><div class="section-label ${colorClass}">${title}</div>${inner}</div>`;
+  }
+  function listHtml(arr, cls) {
+    if (!arr?.length) return `<p class="empty-note">Nessun elemento rilevato.</p>`;
+    return `<ul class="report-list ${cls}">${arr.map(i => `<li>${escHtml(i)}</li>`).join('')}</ul>`;
+  }
+  function numberedListHtml(arr) {
+    if (!arr?.length) return `<p class="empty-note">Nessun punto rilevato.</p>`;
+    return `<ol class="numbered-list">${arr.map(i => `<li>${escHtml(i)}</li>`).join('')}</ol>`;
+  }
+
+  /* ── ACTIONS ─────────────────────────────── */
+  function copyReport() {
+    const meta = document.getElementById('report-meta').textContent;
+    const sections = document.querySelectorAll('.report-section');
+    let text = `BRIEFING OPERATIVO\n${meta}\n\n`;
+    sections.forEach(s => {
+      text += (s.querySelector('.section-label')?.textContent ?? '') + '\n';
+      s.querySelectorAll('li, .exec-text').forEach(el => text += '  ' + el.textContent.trim() + '\n');
+      text += '\n';
+    });
+    navigator.clipboard.writeText(text.trim())
+      .then(() => alert('Testo copiato negli appunti!'))
+      .catch(() => alert('Impossibile copiare: usa Ctrl+A e Ctrl+C.'));
+  }
+
+  function resetReport() {
+    document.getElementById('report-card').style.display = 'none';
+    parsedData = null;
+    document.getElementById('preview-block').style.display = 'none';
+    document.getElementById('week-label').value = '';
+    document.getElementById('dept-label').value = '';
+    document.getElementById('target-label').value = '';
+    document.getElementById('notes-label').value = '';
+    document.getElementById('exec-toggle').checked = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+
+  /* ── REPORT DI ESEMPIO (scritto a mano sui dati demo, nessuna AI) ───── */
+  const DEMO_REPORT = {
+    executive_summary: "Settimana solida fino a giovedì (OEE 93%); venerdì e sabato calano: fermi, scarti e ticket fuori target.",
+    cosa_ha_funzionato: [
+      "Da lunedì a giovedì l'OEE resta sopra il target (87–93%), con il picco giovedì: 93% e 1.350 pezzi OK.",
+      "Scarti sotto i 15 pezzi/giorno da lunedì a venerdì; giovedì il minimo, solo 6.",
+      "Ticket: 19 aperti e 19 chiusi nella settimana, con tempo medio sotto le 4 ore da lunedì a giovedì (2,1–3,5 h)."
+    ],
+    cosa_non_ha_funzionato: [
+      "Sabato è fuori target su tutto: OEE 72%, 22 scarti, 65 minuti di fermo e ticket chiusi in 5,3 ore.",
+      "Venerdì l'OEE è all'85%, cioè non supera il target (>85%), con 40 minuti di fermo e ticket in 4,1 ore.",
+      "I minuti di fermo crescono nel corso della settimana: 25 mercoledì, 40 venerdì, 65 sabato (145 in totale, domenica esclusa)."
+    ],
+    anomalie: [
+      "Giovedì il consumo per pezzo è il più alto della settimana: circa 1,59 kWh/pezzo contro 1,47–1,51 degli altri giorni lavorativi.",
+      "Il calo di sabato coincide con il turno ridotto e gli operatori junior indicati nelle note. Domenica è fermo programmato (480 minuti) e non è stata contata come problema."
+    ],
+    punti_riunione: [
+      "Sabato: valutare affiancamento o formazione per i turni con operatori junior, per ridurre scarti e fermi.",
+      "Venerdì: capire la causa dei 40 minuti di fermo e se la tendenza in crescita continua.",
+      "Giovedì: controllare il consumo energetico per pezzo, il più alto della settimana.",
+      "Weekend: decidere chi chiude i ticket per restare entro le 4 ore."
+    ]
+  };
+
+  /* ── DEMO — compilazione simulata, come farebbe una persona ───────── */
+  const _fast = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const _sleep = ms => new Promise(r => setTimeout(r, ms));
+  const pausa = ms => _sleep(_fast ? 40 : ms);
+  let _demoRunning = false;
+
+  async function evidenzia(id) {
+    const el = document.getElementById(id);
+    el.scrollIntoView({ behavior: _fast ? 'auto' : 'smooth', block: 'center' });
+    el.classList.add('demo-active');
+    await pausa(450);
+    return el;
+  }
+  async function scrivi(id, testo, ms = 28) {
+    const el = await evidenzia(id);
+    el.value = '';
+    for (const ch of testo) {
+      el.value += ch;
+      if (!_fast) await _sleep(ms);
+    }
+    el.classList.remove('demo-active');
+    await pausa(250);
+  }
+
+  async function avviaDemo() {
+    if (_demoRunning) return;
+    _demoRunning = true;
+    const btn = document.getElementById('demo-run-btn');
+    btn.disabled = true; btn.textContent = 'Compilazione in corso…';
+    try {
+      resetReport();
+      await pausa(900);
+
+      // 1 — il file viene "trascinato" nella zona di caricamento
+      const dz = await evidenzia('drop-zone');
+      dz.classList.add('drag-over');
+      await pausa(1100);
+      dz.classList.remove('drag-over');
+      loadDemoData();
+      await pausa(1500);
+
+      // 2 — contesto
+      await scrivi('week-label', '30/09 – 06/10/2026');
+      await scrivi('dept-label', 'Metalmec Srl – Produzione Linea 2');
+      await scrivi('target-label', 'OEE > 85%, scarti < 15 pezzi/giorno, ticket chiusi entro 4h');
+      await scrivi('notes-label', 'Domenica fermo programmato per manutenzione impianto. Sabato turno ridotto con operatori junior.', 20);
+
+      // 3 — genera
+      const gen = await evidenzia('gen-btn');
+      await pausa(500);
+      gen.classList.remove('demo-active');
+      await generateBriefing();
+    } finally {
+      _demoRunning = false;
+      btn.disabled = false; btn.textContent = '↻ Rivedi la simulazione';
+    }
+  }
+
+  /* ── HELPERS ─────────────────────────────── */
+  function setLoading(on) {
+    document.getElementById('loader').style.display = on ? 'flex' : 'none';
+    document.getElementById('gen-btn').disabled = on;
+  }
+  function showError(msg) {
+    const box = document.getElementById('error-box');
+    box.textContent = '⚠️ ' + msg;
+    box.style.display = 'block';
+  }
+  function hideError() { document.getElementById('error-box').style.display = 'none'; }
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
