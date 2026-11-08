@@ -67,6 +67,8 @@
     cursor:pointer; transition:all 0.2s; white-space:nowrap;
   }
   .btn-demo-cta:hover{ transform:translateY(-1px); box-shadow:0 4px 18px rgba(0,212,170,0.4); }
+  .btn-demo-cta:disabled{ opacity:.65; cursor:wait; transform:none; box-shadow:none; }
+  .demo-active{ outline:2px solid #00d4aa; outline-offset:2px; border-radius:8px; }
   /* Bottone portfolio nell'header */
   .btn-portfolio-back{
     display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500;
@@ -221,8 +223,8 @@
 </header>
 
 <div class="demo-cta-banner">
-  <span><strong>Versione demo</strong> — Clicca per vedere il tool in azione con un caso reale.</span>
-  <button class="btn-demo-cta" onclick="caricaDemo()">▶ Clicca per inserire dati demo</button>
+  <span><strong>Versione demo</strong> — Guarda il rapportino compilarsi da solo, come farebbe un tecnico sul campo.</span>
+  <button class="btn-demo-cta" onclick="avviaDemo()">▶ Avvia compilazione simulata</button>
 </div>
 
 <div class="demo-banner">Dati dimostrativi — scenario TecnoService Industriale Srl</div>
@@ -1076,6 +1078,14 @@ async function generaRapportino(){
 
   card.style.display = "block";
   btnRiprova.style.display = "none";
+  if (!_demoMode){
+    // Online non esiste il servizio AI: nessuna chiamata, solo avviso
+    const avviso = "Generazione automatica non disponibile nella demo online.\n\nPer vedere un rapporto generato, usa il pulsante verde \"Avvia compilazione simulata\" in alto.";
+    testoCliente.value = avviso;
+    testoInterno.value = avviso;
+    card.scrollIntoView({ behavior:"smooth" });
+    return;
+  }
   testoCliente.value = "Generazione in corso...";
   testoInterno.value = "Generazione in corso...";
   card.scrollIntoView({ behavior:"smooth" });
@@ -1099,66 +1109,187 @@ async function generaRapportino(){
 
 document.getElementById("btnRiprovaGenerazione").addEventListener("click", generaRapportino);
 
-async function caricaDemo(){
-  // Campi testo
-  const set = (id, val) => { document.getElementById(id).value = val; current[id] = val; };
-  set("cliente", "Pneumatec Srl");
-  set("citta", "Modena");
-  set("macchinario", "Compressore a vite Kaeser SK 25");
-  set("oreMacchina", "14320");
-  set("km", "35");
-  set("tempoAndata", "40");
-  set("tempoRitorno", "40");
-  set("noteLibere", "Usura anomala sul supporto cinghia di trasmissione, consiglio sostituzione entro 3 mesi.");
+// ============================================================
+// DEMO — compilazione simulata, come farebbe un tecnico sul campo
+// ============================================================
+let _demoRunning = false;
+const _fast = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const _sleep = ms => new Promise(r => setTimeout(r, ms));
+const pausa = ms => _sleep(_fast ? 40 : ms);
+const _bannerEl = document.querySelector(".demo-banner");
+const _bannerTesto = _bannerEl.textContent;
+function fase(t){ _bannerEl.textContent = t; }
+const _el = x => typeof x === "string" ? document.getElementById(x) : x;
 
-  document.getElementById("tecnico").value = "Marco Ferretti";
-  current.tecnico = "Marco Ferretti";
-  document.getElementById("tipoIntervento").value = "guasto";
-  current.tipoIntervento = "guasto";
-  document.getElementById("dataIntervento").value = new Date().toISOString().slice(0,10);
-  current.dataIntervento = document.getElementById("dataIntervento").value;
+async function evidenzia(x){
+  const el = _el(x);
+  el.scrollIntoView({ behavior: _fast ? "auto" : "smooth", block: "center" });
+  el.classList.add("demo-active");
+  await pausa(450);
+  return el;
+}
+async function scrivi(x, testo, ms = 40){
+  const el = await evidenzia(x);
+  for (const ch of testo){
+    el.value += ch;
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    if (!_fast) await _sleep(ms);
+  }
+  el.classList.remove("demo-active");
+  await pausa(250);
+}
+async function scegli(x, valore){
+  const el = await evidenzia(x);
+  await pausa(300);
+  el.value = valore;
+  el.dispatchEvent(new Event("change", { bubbles: true }));
+  el.classList.remove("demo-active");
+  await pausa(250);
+}
+async function spunta(x){
+  const el = await evidenzia(x);
+  el.checked = true;
+  el.dispatchEvent(new Event("change", { bubbles: true }));
+  el.classList.remove("demo-active");
+  await pausa(250);
+}
+async function premi(x){
+  const el = await evidenzia(x);
+  await pausa(250);
+  el.click();
+  el.classList.remove("demo-active");
+  await pausa(350);
+}
 
-  // Urgenza
-  document.getElementById("urgenza").checked = true;
-  current.urgenza = true;
+function fotoEsempio(){
+  const c = document.createElement("canvas");
+  c.width = 800; c.height = 600;
+  const g = c.getContext("2d");
+  const grad = g.createLinearGradient(0, 0, 800, 600);
+  grad.addColorStop(0, "#26334f"); grad.addColorStop(1, "#0a0e1a");
+  g.fillStyle = grad; g.fillRect(0, 0, 800, 600);
+  g.strokeStyle = "#00d4aa"; g.lineWidth = 22; g.lineCap = "round";
+  g.beginPath(); g.moveTo(120, 380); g.lineTo(330, 380); g.lineTo(330, 250); g.lineTo(620, 250); g.stroke();
+  g.fillStyle = "#5cb8ff"; g.beginPath(); g.arc(330, 380, 34, 0, Math.PI * 2); g.fill();
+  g.fillStyle = "#e8edf6"; g.font = "bold 34px sans-serif";
+  g.fillText("Raccordo sostituito", 70, 90);
+  g.fillStyle = "#8b97ad"; g.font = "24px sans-serif";
+  g.fillText("Immagine di esempio (demo)", 70, 135);
+  return c.toDataURL("image/jpeg", 0.7);
+}
 
-  // Timer simulato: arrivo 2h30m fa, fine lavoro 25min fa, termine ora
-  const now = new Date();
-  current.orarioArrivo    = new Date(now - 150*60000).toISOString();
-  current.orarioFineLavoro = new Date(now - 25*60000).toISOString();
-  current.orarioTermineAttivita = now.toISOString();
-  const t = new Date(current.orarioArrivo);
-  current.oraInterventoAuto = String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0");
-  current.oraIntervento = current.oraInterventoAuto;
-  document.getElementById("oraIntervento").value = current.oraIntervento;
-
-  // Checklist
-  current.checklist = [
-    {label:"Diagnosi: perdita olio da raccordo posteriore", fatto:true, note:""},
-    {label:"Sostituzione raccordo e guarnizioni", fatto:true, note:""},
-    {label:"Cambio filtro olio contestuale", fatto:true, note:""},
-    {label:"Collaudo e test pressione a 8 bar", fatto:true, note:""}
-  ];
-  renderChecklist();
-
-  // Ricambi
-  current.ricambi = [
-    {nome:"Raccordo maschio 3/8\"", quantita:2},
-    {nome:"Kit guarnizioni", quantita:1},
-    {nome:"Filtro olio Kaeser SK 25", quantita:1}
-  ];
-  renderRicambi();
-
-  ricalcolaOreLavoro();
-  aggiornaDirittoChiamata();
-  aggiornaTempoTotale();
-  renderTimer();
+async function firmaEsempio(){
+  await evidenzia(canvas);
+  const w = canvas.offsetWidth, h = canvas.offsetHeight;
+  ctx.beginPath();
+  const N = 70;
+  for (let i = 0; i <= N; i++){
+    const t = i / N;
+    const x = w * (0.15 + 0.65 * t);
+    const y = h * (0.55 + 0.22 * Math.sin(t * 14) * (1 - 0.4 * t) - 0.15 * t);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    ctx.stroke();
+    if (!_fast) await _sleep(14);
+  }
+  ctx.beginPath(); ctx.moveTo(w * 0.2, h * 0.84); ctx.lineTo(w * 0.8, h * 0.7); ctx.stroke();
+  current.firma = canvas.toDataURL("image/png");
   salva();
+  canvas.classList.remove("demo-active");
+  await pausa(400);
+}
 
-  // Scroll in cima e genera con mock
-  window.scrollTo({top:0, behavior:"smooth"});
-  _demoMode = true;
-  await generaRapportino();
+async function avviaDemo(){
+  if (_demoRunning) return;
+  // form già toccato: riparto da una pagina pulita
+  if (current.orarioArrivo || current.cliente){ location.href = location.pathname + "?demo=1"; return; }
+  _demoRunning = true; _demoMode = true;
+  const btn = document.querySelector(".btn-demo-cta");
+  btn.disabled = true; btn.textContent = "Compilazione in corso…";
+  try {
+    window.scrollTo({ top: 0, behavior: _fast ? "auto" : "smooth" });
+    await pausa(600);
+
+    fase("Il tecnico arriva dal cliente e avvia il timer");
+    await premi("btnTimer");              // Arrivo dal cliente
+    await pausa(2200);
+    fase("Fine del lavoro: il tecnico passa alla compilazione");
+    await premi("btnTimer");              // Fine lavoro
+    // porto i tempi a un intervento realistico (3 ore, inizio 09:15) così le ore e il diritto di chiamata sono coerenti
+    const now = Date.now();
+    current.orarioArrivo = new Date(now - 175 * 60000).toISOString();
+    current.orarioFineLavoro = new Date(now - 30 * 60000).toISOString();
+    current.oraInterventoAuto = "09:15"; current.oraIntervento = "09:15";
+    document.getElementById("oraIntervento").value = "09:15";
+    aggiornaNotaOra(); aggiornaDirittoChiamata(); salva(); renderTimer();
+
+    fase("Compila i dati dell'intervento");
+    await scrivi("cliente", "Pneumatec Srl");
+    await scrivi("citta", "Modena");
+    const d = new Date();
+    const oggi = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    await scegli("dataIntervento", oggi);
+    await scrivi("macchinario", "Compressore a vite Kaeser SK 25");
+    await scrivi("oreMacchina", "14320");
+    await scegli("tecnico", "Marco Ferretti");
+    await scegli("tipoIntervento", "guasto");
+
+    fase("Trasferta e urgenza");
+    await scrivi("km", "35");
+    await scrivi("tempoAndata", "40");
+    await scrivi("tempoRitorno", "40");
+    await spunta("urgenza");
+
+    fase("Elenca il lavoro svolto");
+    const voci = [
+      ["Diagnosi: perdita olio da raccordo posteriore", ""],
+      ["Sostituzione raccordo e guarnizioni", ""],
+      ["Cambio filtro olio contestuale", ""],
+      ["Collaudo e test pressione a 8 bar", "Nessuna perdita dopo 15 minuti"]
+    ];
+    for (let i = 0; i < voci.length; i++){
+      if (i > 0) await premi("addChecklistItem");
+      const row = document.querySelectorAll("#checklistContainer .checklist-item")[i];
+      await scrivi(row.querySelector(".item-label"), voci[i][0], 25);
+      if (voci[i][1]) await scrivi(row.querySelector("textarea"), voci[i][1], 25);
+      await spunta(row.querySelector("input[type=checkbox]"));
+    }
+
+    fase("Registra i ricambi usati");
+    const ricambi = [["Raccordo maschio 3/8\"", 2], ["Kit guarnizioni", 1], ["Filtro olio Kaeser SK 25", 1]];
+    for (let i = 0; i < ricambi.length; i++){
+      await premi("addRicambio");
+      const row = document.querySelectorAll("#ricambiContainer .ricambio-row")[i];
+      const [nome, qta] = row.querySelectorAll("input");
+      await scrivi(nome, ricambi[i][0], 25);
+      qta.value = "";
+      await scrivi(qta, String(ricambi[i][1]));
+    }
+
+    fase("Aggiunge una nota per il coordinatore");
+    await scrivi("noteLibere", "Usura anomala sul supporto cinghia di trasmissione, consiglio sostituzione entro 3 mesi.", 22);
+
+    fase("Allega una foto");
+    await evidenzia("fotoGrid");
+    current.foto.push(fotoEsempio());
+    renderFoto(); salva();
+    await pausa(800);
+
+    fase("Il cliente firma");
+    await firmaEsempio();
+
+    fase("Compilazione finita: il tecnico preme Termine attività");
+    await premi("btnTimer");              // Termine attività → genera il rapporto
+    await pausa(2600);
+    fase("Fatto. Ora puoi modificare i testi o provare i pulsanti di invio (simulati).");
+  } finally {
+    _demoRunning = false;
+    btn.disabled = false; btn.textContent = "↻ Rivedi la simulazione";
+  }
+}
+
+if (new URLSearchParams(location.search).get("demo") === "1"){
+  history.replaceState(null, "", location.pathname);
+  setTimeout(avviaDemo, 600);
 }
 
 // testi modificabili: salvo in current appena il tecnico li modifica a mano
