@@ -23,9 +23,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Alessandro Dardi — Service Manager, Operations &amp; AI">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Manrope:wght@300;400;500;600&family=Inter:wght@700;800&display=swap">
+<link rel="stylesheet" href="fonts/fonts.css">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="7a2837f0-c1d5-4eaf-b0c4-a9f93e444e4a"></script>
 
 <style>
@@ -617,6 +615,8 @@ footer {
 }
 .footer-row p { font-size: 0.78rem; color: var(--muted); margin: 0; }
 .footer-tagline { font-style: italic; }
+.footer-row a { text-decoration: underline; text-underline-offset: 3px; }
+.footer-row a:hover { color: var(--accent); }
 
 /* SCROLL ANIMATION */
 .fade-up {
@@ -627,6 +627,7 @@ footer {
 .fade-up.in { opacity: 1; transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) {
   .fade-up { opacity: 1; transform: none; transition: none; }
+  .disponibile-pulse { animation: none; }
 }
 
 /* RESPONSIVE */
@@ -654,7 +655,6 @@ footer {
   .proj-thumb { height: 90px; }
   .proj-thumb svg { width: 36px; height: 36px; }
   .proj-body { padding: 14px 16px; }
-  .proj-metric { display: none; }
   .proj-card p { margin-bottom: 10px; }
 }
 </style>
@@ -894,12 +894,12 @@ footer {
         <div class="proj-body">
           <div class="proj-cat">Document AI</div>
           <h3>Analisi documento</h3>
-          <p>Carica un documento aziendale (preventivo, contratto, email, bando) e ottieni in 30 secondi una sintesi in 5 sezioni: cosa include, punti critici e condizioni chiave.</p>
+          <p>Incolla il testo di un documento aziendale (preventivo, contratto, email, bando) e ottieni una sintesi in 5 sezioni: cosa include, punti critici e condizioni chiave. Demo con esempi pronti; in modalità live usi la tua chiave API.</p>
           <p class="proj-metric">Contratti, offerte fornitori, specifiche tecniche: invece di leggerli tutti, chiedi direttamente.</p>
           <div class="proj-foot">
             <span class="proj-privacy">
               <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1L1.5 3v3.5c0 2.5 2 4.5 4.5 5 2.5-.5 4.5-2.5 4.5-5V3L6 1z"/></svg>
-              Browser only · Nessun server
+              Demo · Chiave API tua
             </span>
             <a href="https://alessandrodardi-1982.github.io/analisi-documento/" target="_blank" class="proj-link">Prova →</a>
           </div>
@@ -966,12 +966,12 @@ footer {
         <div class="proj-body">
           <div class="proj-cat">Quotation AI</div>
           <h3>Preventivatore AI</h3>
-          <p>Descrivi il lavoro a parole: l'AI struttura una bozza di preventivo in 30 secondi. Le descrizioni non vengono memorizzate né usate per training.</p>
-          <p class="proj-metric">Con listini e materiali pronti, i tempi di preventivazione scendono del 70%.</p>
+          <p>Prototipo con dati di esempio: un clic carica un caso già pronto e mostra come la descrizione di un lavoro diventa una bozza di preventivo da rivedere.</p>
+          <p class="proj-metric">Il caso di esempio mostra il flusso completo, dalla richiesta del cliente alla bozza.</p>
           <div class="proj-foot">
             <span class="proj-privacy">
               <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1L1.5 3v3.5c0 2.5 2 4.5 4.5 5 2.5-.5 4.5-2.5 4.5-5V3L6 1z"/></svg>
-              GDPR · DPA attivo
+              Demo · Dati fittizi
             </span>
             <a href="preventivatore_demo.html" target="_blank" class="proj-link">Prova →</a>
           </div>
@@ -991,12 +991,12 @@ footer {
         <div class="proj-body">
           <div class="proj-cat">Field Ops · AI</div>
           <h3>Rapportino intervento</h3>
-          <p>Il tecnico compila sul campo: timer automatico, firma del cliente su canvas, testo generato dall'AI. Niente carta né trascrizione in ufficio.</p>
-          <p class="proj-metric">I tecnici perdevano minuti preziosi su un gestionale lento. Questo si compila in meno di 3 minuti.</p>
+          <p>Prototipo per il tecnico sul campo: timer degli orari, firma del cliente su schermo e rapportino generato dall'AI. In questa demo l'intervento e il testo sono di esempio.</p>
+          <p class="proj-metric">Pensato per compilare il rapportino in pochi minuti, direttamente dal telefono.</p>
           <div class="proj-foot">
             <span class="proj-privacy">
               <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1L1.5 3v3.5c0 2.5 2 4.5 4.5 5 2.5-.5 4.5-2.5 4.5-5V3L6 1z"/></svg>
-              Browser only · Nessun server
+              Demo · Dati fittizi
             </span>
             <a href="rapportino_demo.html" target="_blank" class="proj-link">Prova →</a>
           </div>
@@ -1119,6 +1119,7 @@ footer {
     <p>© 2026 Alessandro Dardi</p>
     <p class="footer-tagline">Le prove, non le promesse.</p>
     <p>Disponibile da subito</p>
+    <p><a href="privacy.html">Privacy</a></p>
   </div>
 </footer>
 

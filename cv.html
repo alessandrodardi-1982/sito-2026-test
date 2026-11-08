@@ -20,9 +20,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Alessandro Dardi — Service Manager, Operations &amp; AI">
 <meta name="twitter:card" content="summary_large_image">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Manrope:wght@300;400;500;600&family=Inter:wght@700;800&display=swap">
+<link rel="stylesheet" href="fonts/fonts.css">
   <style>
     :root {
       --bg:         #FFFFFF;
@@ -468,6 +466,8 @@
     }
     .footer-row p { font-size: 0.76rem; color: var(--muted); margin: 0; }
     .footer-tagline { font-style: italic; }
+    .footer-row a { text-decoration: underline; text-underline-offset: 3px; }
+    .footer-row a:hover { color: var(--accent); }
 
     /* FADE */
     .fade-up {
@@ -478,6 +478,7 @@
     .fade-up.in { opacity: 1; transform: translateY(0); }
     @media (prefers-reduced-motion: reduce) {
       .fade-up { opacity: 1; transform: none; transition: none; }
+      .disponibile-pulse { animation: none; }
     }
 
     /* RESPONSIVE */
@@ -847,6 +848,7 @@
       <p>Alessandro Dardi · CV · Bologna 2026</p>
       <p>Autorizzo il trattamento dei dati personali ai sensi del Reg. UE 2016/679 (GDPR) e del D.lgs. 196/2003 e s.m.i.</p>
       <p class="footer-tagline">Le prove, non le promesse.</p>
+      <p><a href="privacy.html">Privacy</a></p>
     </div>
   </div>
 </footer>
