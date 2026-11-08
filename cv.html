@@ -15,6 +15,11 @@
   <meta property="og:url" content="https://alessandrodardi.it/cv.html">
   <meta property="og:type" content="profile">
   <meta property="og:locale" content="it_IT">
+<meta property="og:image" content="https://alessandrodardi.it/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Alessandro Dardi — Service Manager, Operations &amp; AI">
+<meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Manrope:wght@300;400;500;600&family=Inter:wght@700;800&display=swap">
@@ -23,12 +28,12 @@
       --bg:         #FFFFFF;
       --fg:         #18181B;
       --muted:      #71717A;
-      --accent:     #0D9488;
+      --accent:     #0F766E;
       --accent-bg:  #F0FDFA;
       --accent-mid: #CCFBF1;
       --surface:    #F8FAFC;
       --border:     #E4E7EB;
-      --green:      #059669;
+      --green:      #047857;
       --display:    'Syne', system-ui, sans-serif;
       --heading:    'Inter', system-ui, sans-serif;
       --body:       'Manrope', system-ui, sans-serif;
@@ -71,6 +76,7 @@
       -webkit-font-smoothing: antialiased;
     }
     a { color: inherit; text-decoration: none; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
     .inner {
       max-width: 1120px;
@@ -147,7 +153,7 @@
       background: none;
       border: none;
       cursor: pointer;
-      padding: 6px;
+      padding: 11px;
       color: var(--fg);
       line-height: 0;
     }
@@ -312,7 +318,7 @@
       margin: 0 0 16px;
       font-size: 0.975rem;
       max-width: 800px;
-      text-align: justify;
+      text-align: left;
     }
     .profilo-text p:last-child { margin: 0; }
     .profilo-text strong { color: var(--fg); font-weight: 600; }
@@ -392,14 +398,9 @@
       font-weight: 500;
       padding: 3px 9px;
       border-radius: 3px;
-      background: var(--surface);
-      color: var(--muted);
-      border: 1px solid var(--border);
-    }
-    .tl-current .tl-tag {
       background: var(--accent-bg);
       color: var(--accent);
-      border-color: var(--accent-mid);
+      border: 1px solid var(--accent-mid);
     }
 
     /* COMPETENZE */
@@ -588,7 +589,7 @@
           <a href="CV_Alessandro_Dardi_2026.pdf" download class="btn btn-ghost">Scarica il CV</a>
         </div>
       </div>
-      <img src="foto_profilo.png" alt="Alessandro Dardi" class="hero-photo fade-up">
+      <img src="foto_profilo.webp" width="200" height="200" fetchpriority="high" alt="Alessandro Dardi" class="hero-photo fade-up">
     </div>
   </div>
 </section>
@@ -617,8 +618,8 @@
           <div class="tl-place">Bologna</div>
         </div>
         <div class="tl-right">
-          <div class="tl-role">Formazione e progetti su automazione e analisi dati</div>
-          <div class="tl-company">Master Digital Restart · Progetti pubblicati nel portfolio</div>
+          <div class="tl-role">Automazione dei processi e analisi dati</div>
+          <div class="tl-company">Progetti personali · Portfolio online</div>
           <p class="tl-desc">Progetti pratici su problemi reali del service: report automatici in n8n, dashboard operative in Tableau ed Excel, uno strumento per smistare le richieste di assistenza. Sono tutti pubblicati nel portfolio e si possono provare.</p>
           <div class="tl-tags">
             <span class="tl-tag">n8n</span>
@@ -629,7 +630,7 @@
         </div>
       </div>
 
-      <div class="tl-item tl-current fade-up">
+      <div class="tl-item fade-up">
         <div class="tl-left">
           <div class="tl-date">Feb — Giu 2025</div>
           <div class="tl-place">Bologna</div>
@@ -647,7 +648,7 @@
         </div>
       </div>
 
-      <div class="tl-item tl-current fade-up">
+      <div class="tl-item fade-up">
         <div class="tl-left">
           <div class="tl-date">Apr 2018 — Feb 2025</div>
           <div class="tl-place">Zola Predosa (BO)</div>
@@ -667,7 +668,7 @@
         </div>
       </div>
 
-      <div class="tl-item tl-current fade-up">
+      <div class="tl-item fade-up">
         <div class="tl-left">
           <div class="tl-date">Mar 2016 — Apr 2018</div>
           <div class="tl-place">Bologna</div>
@@ -762,7 +763,7 @@
     <h2 class="s-title fade-up">Formazione</h2>
     <div class="timeline">
 
-      <div class="tl-item tl-current fade-up">
+      <div class="tl-item fade-up">
         <div class="tl-left">
           <div class="tl-date">Feb — Mag 2026</div>
           <div class="tl-place">Talent Garden</div>
