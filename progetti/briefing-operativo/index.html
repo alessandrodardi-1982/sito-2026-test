@@ -144,6 +144,13 @@
 
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media (max-width: 540px) { .row-2 { grid-template-columns: 1fr; } }
+    /* telefono: nav fissa più compatta */
+    @media (max-width: 540px) {
+      header { padding: 10px 14px; }
+      .header-sub, .demo-cta span { display: none; }
+      .demo-banner { font-size: 11px; padding: 6px 10px; }
+      .demo-cta { padding: 8px 10px; }
+    }
 
     /* ── BUTTONS ────────────────────────────── */
     .btn {
@@ -498,16 +505,8 @@
 
   <!-- ── STEP 1: FILE ── -->
   <div class="card">
-    <div class="card-title">1 — Carica il file KPI</div>
-    <div class="drop-zone" id="drop-zone" onclick="showError('In questa demo online si usa il file di esempio: premi \u201cProva con dati demo\u201d.')">
-      <div class="drop-icon">📂</div>
-      <div class="drop-label">Qui si trascina il file Excel o CSV con i KPI</div>
-      <div class="drop-hint">nella demo online il file è quello di esempio · nessun file viene letto</div>
-    </div>
-    <div class="file-actions">
-      <span class="file-sep">oppure</span>
-      <button class="btn btn-demo" onclick="loadDemoData()">▶ Prova con dati demo</button>
-    </div>
+    <div class="card-title">1 — File KPI</div>
+    <p class="drop-hint" id="file-placeholder" style="margin:20px 0 8px; padding:18px 22px; color:#fff; font-size:14px; text-align:center; border:1px solid rgba(255,255,255,0.4); border-radius:14px; background:rgba(255,255,255,0.07);">Il file KPI di esempio compare qui quando avvii la compilazione simulata.</p>
     <div id="preview-block" style="display:none; margin-top:20px;">
       <p class="preview-meta" id="preview-meta"></p>
       <div class="preview-wrap">
@@ -520,7 +519,6 @@
   <div class="card">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
       <div class="card-title" style="margin-bottom:0;">2 — Contesto (opzionale)</div>
-      <button class="btn btn-demo" style="font-size:12px; padding:6px 12px;" onclick="fillDemoContext()">▶ Dati demo</button>
     </div>
     <div class="row-2">
       <div class="field">
@@ -625,12 +623,13 @@
     document.getElementById('preview-meta').innerHTML =
       `📄 ${escHtml(filename)} · ${rows.length} righe · ${headers.length} colonne${demoBadge}`;
     document.getElementById('preview-block').style.display = 'block';
+    document.getElementById('file-placeholder').style.display = 'none';
   }
 
   /* ── GENERATE ────────────────────────────── */
   async function generateBriefing() {
     hideError();
-    if (!parsedData) { showError('Premi prima \u201cProva con dati demo\u201d per caricare i KPI di esempio.'); return; }
+    if (!parsedData) { showError('Premi prima \u201cAvvia compilazione simulata\u201d per caricare i KPI di esempio.'); return; }
 
     const week     = document.getElementById('week-label').value.trim();
     const dept     = document.getElementById('dept-label').value.trim();
@@ -702,6 +701,7 @@
     document.getElementById('report-card').style.display = 'none';
     parsedData = null;
     document.getElementById('preview-block').style.display = 'none';
+    document.getElementById('file-placeholder').style.display = 'block';
     document.getElementById('week-label').value = '';
     document.getElementById('dept-label').value = '';
     document.getElementById('target-label').value = '';
@@ -769,11 +769,9 @@
       resetReport();
       await pausa(900);
 
-      // 1 — il file viene "trascinato" nella zona di caricamento
-      const dz = await evidenzia('drop-zone');
-      dz.classList.add('drag-over');
-      await pausa(1100);
-      dz.classList.remove('drag-over');
+      // 1 — il file KPI viene caricato
+      await evidenzia('file-placeholder');
+      await pausa(900);
       loadDemoData();
       await pausa(1500);
 
@@ -793,6 +791,16 @@
       btn.disabled = false; btn.textContent = '↻ Rivedi la simulazione';
     }
   }
+
+
+  /* ── NAV FISSA: il contenuto parte sempre sotto l'header, qualunque sia la sua altezza ── */
+  function spaziaSottoHeader() {
+    const h = document.querySelector('header');
+    document.querySelector('main').style.paddingTop = (h.offsetHeight + 32) + 'px';
+  }
+  window.addEventListener('load', spaziaSottoHeader);
+  window.addEventListener('resize', spaziaSottoHeader);
+  spaziaSottoHeader();
 
   /* ── HELPERS ─────────────────────────────── */
   function setLoading(on) {

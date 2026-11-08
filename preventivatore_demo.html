@@ -52,6 +52,18 @@
     padding: 10px 20px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700;
     cursor: pointer; transition: all 0.2s; white-space: nowrap;
   }
+  .demo-btn:disabled { opacity: .65; cursor: wait; transform: none; box-shadow: none; }
+  .demo-active { outline: 2px solid var(--accent2); outline-offset: 2px; border-radius: 8px; }
+  /* il form si compila solo con la demo: nessun input manuale */
+  .form-panel .tag-btn, .form-panel .generate-btn { pointer-events: none; }
+  .form-panel textarea, .form-panel input { cursor: default; }
+  /* pulsante demo lampeggiante finché non viene premuto */
+  .demo-btn.attira { animation: demoPulse 1.3s ease-in-out infinite; }
+  @keyframes demoPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,170,0.65); transform: scale(1); }
+    50% { box-shadow: 0 0 0 12px rgba(0,212,170,0); transform: scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce) { .demo-btn.attira { animation: none; box-shadow: 0 0 0 3px rgba(0,212,170,0.55); } }
   .demo-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(0,212,170,0.4); }
 
   /* WORK NOTE */
@@ -213,7 +225,7 @@
   <div class="demo-banner-text">
     <strong>Versione demo</strong> — Clicca il pulsante per vedere il tool in azione con un caso reale prefabbricato.
   </div>
-  <button class="demo-btn" onclick="caricaDemo()">
+  <button class="demo-btn attira" id="demo-run-btn" onclick="caricaDemo()">
     ▶ Clicca per inserire dati demo
   </button>
 </div>
@@ -233,14 +245,14 @@
 
     <div class="field">
       <label>Descrizione richiesta cliente</label>
-      <textarea id="richiesta" placeholder="Es. Compressore Atlas Copco GA11 fermo da stamattina, perdita d'olio dal separatore. Cliente in produzione, serve intervento urgente oggi…"></textarea>
+      <textarea id="richiesta" readonly placeholder="La richiesta del cliente si compila da sola quando premi il pulsante demo in alto…"></textarea>
     </div>
 
     <div class="divider"></div>
 
     <div class="field">
       <label>Tipo impianto</label>
-      <select id="tipo-impianto">
+      <select id="tipo-impianto" disabled>
         <option value="aria compressa">Aria compressa</option>
         <option value="refrigerazione">Refrigerazione / gruppi frigo</option>
         <option value="meccanica">Meccanica industriale</option>
@@ -251,18 +263,18 @@
     <div class="field">
       <label>Urgenza</label>
       <div class="tag-group">
-        <button class="tag-btn" id="urg-standard" onclick="setUrgenza('standard')">Standard</button>
-        <button class="tag-btn active" id="urg-media" onclick="setUrgenza('media')">Media</button>
-        <button class="tag-btn" id="urg-alta" onclick="setUrgenza('alta')">Alta — intervento entro oggi</button>
+        <button class="tag-btn" tabindex="-1" id="urg-standard" onclick="setUrgenza('standard')">Standard</button>
+        <button class="tag-btn active" tabindex="-1" id="urg-media" onclick="setUrgenza('media')">Media</button>
+        <button class="tag-btn" tabindex="-1" id="urg-alta" onclick="setUrgenza('alta')">Alta — intervento entro oggi</button>
       </div>
     </div>
 
     <div class="field">
       <label>Cliente (opzionale)</label>
-      <input type="text" id="cliente" placeholder="Es. Officine Rossi Srl — Modena">
+      <input type="text" id="cliente" readonly placeholder="Si compila da solo con la demo">
     </div>
 
-    <button class="generate-btn" id="gen-btn" onclick="avviaDemo()">
+    <button class="generate-btn" id="gen-btn" tabindex="-1" onclick="avviaDemo()">
       <span id="gen-icon">✨</span>
       <span id="gen-spin" class="spinner"></span>
       <span id="gen-txt">Genera preventivo</span>
@@ -275,8 +287,7 @@
     <div class="empty-state" id="empty-state">
       <div class="empty-icon">📄</div>
       <div class="empty-title">Nessun preventivo generato</div>
-      <div class="empty-sub">Usa il pulsante demo oppure compila il form e premi "Genera preventivo"</div>
-      <div class="empty-demo-hint" onclick="caricaDemo()">▶ Inserisci dati demo</div>
+      <div class="empty-sub">Premi "Clicca per inserire dati demo" in alto per vedere il tool in azione</div>
     </div>
 
     <div class="preventivo" id="preventivo">
@@ -375,17 +386,69 @@ function setUrgenza(val) {
   document.getElementById('urg-'+val).classList.add('active');
 }
 
-function caricaDemo() {
-  document.getElementById('richiesta').value = DEMO_DATA.richiesta;
-  document.getElementById('tipo-impianto').value = DEMO_DATA.tipoImpianto;
-  document.getElementById('cliente').value = DEMO_DATA.cliente;
-  setUrgenza(DEMO_DATA.urgenza);
-  // Scroll al form su mobile
-  document.querySelector('.form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  // Avvia la simulazione dopo un istante
-  setTimeout(() => avviaDemo(), 400);
+// Demo: compila il form passo passo, come farebbe una persona, poi genera il preventivo
+const _fast = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const _sleep = ms => new Promise(r => setTimeout(r, ms));
+const pausa = ms => _sleep(_fast ? 40 : ms);
+let _demoRunning = false;
+
+async function evidenzia(id) {
+  const el = document.getElementById(id);
+  el.scrollIntoView({ behavior: _fast ? 'auto' : 'smooth', block: 'center' });
+  el.classList.add('demo-active');
+  await pausa(450);
+  return el;
+}
+async function scrivi(id, testo, ms) {
+  const el = await evidenzia(id);
+  el.value = '';
+  for (const ch of testo) {
+    el.value += ch;
+    if (!_fast) await _sleep(ms);
+  }
+  el.classList.remove('demo-active');
+  await pausa(300);
 }
 
+async function caricaDemo() {
+  if (_demoRunning) return;
+  _demoRunning = true;
+  const btn = document.getElementById('demo-run-btn');
+  btn.disabled = true;
+  btn.classList.remove('attira');
+  btn.textContent = 'Compilazione in corso…';
+  try {
+    nuovoPreventivo(); // riparte da un form pulito
+    window.scrollTo({ top: 0, behavior: _fast ? 'auto' : 'smooth' });
+    await pausa(700);
+
+    await scrivi('richiesta', DEMO_DATA.richiesta, 14);
+
+    const tipo = await evidenzia('tipo-impianto');
+    await pausa(300);
+    tipo.value = DEMO_DATA.tipoImpianto;
+    tipo.classList.remove('demo-active');
+    await pausa(300);
+
+    const urg = await evidenzia('urg-' + DEMO_DATA.urgenza);
+    await pausa(300);
+    setUrgenza(DEMO_DATA.urgenza);
+    urg.classList.remove('demo-active');
+    await pausa(300);
+
+    await scrivi('cliente', DEMO_DATA.cliente, 40);
+
+    const gen = await evidenzia('gen-btn');
+    await pausa(500);
+    gen.classList.remove('demo-active');
+    avviaDemo();
+    await pausa(2400); // 1,8 s di "generazione" + scorrimento al risultato
+  } finally {
+    _demoRunning = false;
+    btn.disabled = false;
+    btn.textContent = '↻ Rivedi la simulazione';
+  }
+}
 function avviaDemo() {
   const richiesta = document.getElementById('richiesta').value.trim();
   if (!richiesta) {
