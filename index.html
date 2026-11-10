@@ -528,6 +528,21 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .proj-link { display: inline-block; padding-block: 10px; font-size: 0.75rem; font-weight: 600; color: var(--accent); text-decoration: none; transition: opacity 0.18s; }
 .proj-link:hover { opacity: 0.7; }
 
+/* scheda in evidenza: larga quanto le 3 colonne */
+.proj-wide { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(200px, 32%) 1fr; }
+.proj-wide .proj-thumb { height: auto; min-height: 190px; }
+.proj-wide .proj-body { padding: 28px 32px; align-self: center; }
+.proj-wide h3 { font-size: 1.1rem; }
+.proj-wide p { font-size: 0.9rem; max-width: 64ch; }
+.proj-t7 { background: linear-gradient(135deg, #E6EEFA 0%, #C9D8F0 100%); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .proj-t7 { background: linear-gradient(135deg,#121C32,#1A2A4A); } }
+:root[data-theme="dark"] .proj-t7 { background: linear-gradient(135deg,#121C32,#1A2A4A); }
+@media (max-width: 820px) {
+  .proj-wide { grid-template-columns: 1fr; }
+  .proj-wide .proj-thumb { min-height: 110px; }
+  .proj-wide .proj-body { padding: 20px 22px; }
+}
+
 /* COME LAVORO */
 .process-wrap {
   display: grid;
@@ -761,8 +776,8 @@ footer {
         <div class="strip-desc">Interventi l'anno</div>
       </div>
       <div class="strip-cell fade-up">
-        <div class="strip-num" data-count="6" data-suffix="">6</div>
-        <div class="strip-desc">Tool AI costruiti</div>
+        <div class="strip-num" data-count="7" data-suffix="">7</div>
+        <div class="strip-desc">Tool costruiti</div>
       </div>
       <div class="strip-cell fade-up">
         <div class="strip-num">IT &amp; OT</div>
@@ -854,7 +869,7 @@ footer {
           </svg>
         </div>
         <h3>So costruire soluzioni</h3>
-        <p>Non fermo il problema all'analisi. Se serve uno strumento, lo costruisco. <strong>I sei tool nel portfolio sono partiti da problemi reali.</strong></p>
+        <p>Non fermo il problema all'analisi. Se serve uno strumento, lo costruisco. <strong>I sette tool nel portfolio sono partiti da problemi reali.</strong></p>
       </div>
       <div class="svc-card">
         <div class="svc-icon">
@@ -875,9 +890,34 @@ footer {
 <section id="projects" class="section">
   <div class="inner">
     <div class="eyebrow fade-up">Portfolio</div>
-    <h2 class="s-title fade-up">Sei tool costruiti, non descritti.</h2>
+    <h2 class="s-title fade-up">Sette tool costruiti, non descritti.</h2>
     <p class="s-lead fade-up">Ogni progetto nasce da situazioni che ho vissuto direttamente sul lavoro. I dati di esempio sono fittizi, ma costruiti su casi reali: sono gli strumenti che avrei voluto avere durante le mie attività quotidiane.</p>
     <div class="projects-grid">
+
+      <div class="proj-card proj-wide fade-up">
+        <div class="proj-thumb proj-t7">
+          <svg width="64" height="64" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
+            <path d="M26 46s-12-11-12-20a12 12 0 0 1 24 0c0 9-12 20-12 20z"/>
+            <circle cx="26" cy="26" r="4.5"/>
+            <circle cx="8" cy="38" r="2"/>
+            <circle cx="45" cy="34" r="2"/>
+            <circle cx="42" cy="12" r="2"/>
+          </svg>
+        </div>
+        <div class="proj-body">
+          <div class="proj-cat">Field Service · Operations</div>
+          <h3>Mappa operativa</h3>
+          <p>Prototipo per chi coordina i tecnici sul territorio: gli interventi aperti diventano punti su una mappa, con filtri per stato, tipo e tecnico e priorità assegnabili con un clic. La demo usa 200 interventi di esempio e si guida da sola: basta premere il pulsante.</p>
+          <p class="proj-metric">Chi è carico, cosa è urgente e quali interventi sono vicini si vedono a colpo d'occhio, senza aprire un foglio Excel.</p>
+          <div class="proj-foot">
+            <span class="proj-privacy">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1L1.5 3v3.5c0 2.5 2 4.5 4.5 5 2.5-.5 4.5-2.5 4.5-5V3L6 1z"/></svg>
+              Demo · Dati fittizi
+            </span>
+            <a href="progetti/mappa-interventi/" target="_blank" class="proj-link">Prova →</a>
+          </div>
+        </div>
+      </div>
 
       <div class="proj-card fade-up">
         <div class="proj-thumb proj-t1">

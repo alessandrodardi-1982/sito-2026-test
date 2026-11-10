@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<script defer src="https://cloud.umami.is/script.js" data-website-id="7a2837f0-c1d5-4eaf-b0c4-a9f93e444e4a" data-domains="alessandrodardi.it"></script>
+<title>Mappa Interventi &#8212; Demo &#8212; Alessandro Dardi</title>
+<link rel="stylesheet" href="../fonts/dashboard-fonts.css"/>
+<link rel="stylesheet" href="../vendor/leaflet/leaflet.css"/>
+<script src="../vendor/leaflet/leaflet.js"></script>
+<style>
+/* ============================================================
+   BASE
+============================================================ */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',Arial,sans-serif; background:#0d1b2a; color:#e0e8f0; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+
+/* ============================================================
+   HEADER — desktop
+============================================================ */
+#header { background:#0d1b2a; border-bottom:1px solid #1e3a5f; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+#header-left { display:flex; align-items:center; gap:14px; }
+#logo-mark { width:36px; height:36px; border-radius:8px; background:#1a5fa8; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#fff; flex-shrink:0; }
+#header-title { font-size:15px; font-weight:600; color:#e0e8f0; }
+#header-sub { font-size:11px; color:#6b8cae; margin-top:1px; }
+#header-right { display:flex; gap:24px; }
+.h-kpi { text-align:right; }
+.h-kpi-val { font-size:20px; font-weight:600; line-height:1; }
+.h-kpi-label { font-size:10px; color:#6b8cae; margin-top:2px; text-transform:uppercase; letter-spacing:.05em; }
+
+/* ============================================================
+   BODY LAYOUT — desktop
+============================================================ */
+#body { display:flex; flex:1; overflow:hidden; min-height:0; }
+
+/* SIDEBAR — desktop */
+#sidebar { width:300px; flex-shrink:0; background:#111e2e; border-right:1px solid #1e3a5f; display:flex; flex-direction:column; overflow:hidden; }
+#filters { padding:14px 14px 10px; border-bottom:1px solid #1e3a5f; overflow-y:auto; max-height:58vh; }
+.filter-label { font-size:10px; color:#6b8cae; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+.filter-group { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+.fbtn { font-size:11px; padding:4px 9px; border-radius:12px; border:1px solid #2a4a6e; background:transparent; color:#8aaec8; cursor:pointer; transition:all .15s; user-select:none; -webkit-tap-highlight-color:transparent; }
+.fbtn.active { background:#2ca1fe; color:#fff; border-color:#2ca1fe; }
+.fbtn.tutti-btn.active { background:#1a3a5a; color:#8aaec8; border-color:#3a5a7e; }
+.fbtn:hover:not(.active) { border-color:#4a7aae; color:#c0d8f0; }
+.fbtn-alta { border-color:#e05c2a; }
+.fbtn-alta.active { background:#e05c2a; border-color:#e05c2a; color:#fff; }
+.fbtn-media { border-color:#f0a020; }
+.fbtn-media.active { background:#f0a020; border-color:#f0a020; color:#000; }
+.fbtn-bassa { border-color:#4a9a6a; }
+.fbtn-bassa.active { background:#4a9a6a; border-color:#4a9a6a; color:#fff; }
+
+#list-header { padding:10px 14px 6px; font-size:10px; color:#6b8cae; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid #1e3a5f; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+#list-count { font-size:11px; color:#2ca1fe; font-weight:600; }
+#attivita-list { flex:1; overflow-y:auto; }
+#attivita-list::-webkit-scrollbar { width:4px; }
+#attivita-list::-webkit-scrollbar-track { background:#0d1b2a; }
+#attivita-list::-webkit-scrollbar-thumb { background:#2a4a6e; border-radius:2px; }
+
+/* LIST ITEMS */
+.list-item { padding:10px 14px; border-bottom:1px solid #1a2f47; cursor:pointer; transition:background .12s; }
+.list-item:hover { background:#1a2f47; }
+.list-item.selected { background:#162840; border-left:3px solid #2ca1fe; }
+.li-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:4px; }
+.li-cliente { font-size:12px; font-weight:600; color:#c8dff0; line-height:1.3; flex:1; }
+.li-tipo { font-size:10px; padding:2px 6px; border-radius:4px; background:#1e3a5f; color:#8aaec8; flex-shrink:0; }
+.li-bottom { display:flex; gap:8px; align-items:center; }
+.li-citta { font-size:11px; color:#6b8cae; }
+.li-tecnico { font-size:11px; color:#8aaec8; }
+.stato-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.pr-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-left:auto; }
+
+/* MAP */
+#map-wrap { position:relative; flex:1; }
+#map { height:100%; width:100%; }
+
+/* POPUP */
+.ts-popup { min-width:230px; font-family:'Segoe UI',Arial,sans-serif; }
+.ts-popup-title { font-size:13px; font-weight:700; color:#0d1b2a; margin-bottom:6px; line-height:1.3; }
+.ts-popup-row { display:flex; justify-content:space-between; font-size:11px; padding:3px 0; border-bottom:1px solid #eee; color:#333; }
+.ts-popup-row:last-child { border:none; }
+.ts-popup-row span:first-child { color:#666; }
+.ts-popup-badge { display:inline-block; font-size:10px; font-weight:600; padding:2px 8px; border-radius:10px; margin-bottom:6px; }
+.ts-popup-note { font-size:11px; color:#888; font-style:italic; margin-top:4px; }
+.ts-popup-prio { display:flex; align-items:center; gap:8px; margin-top:8px; padding-top:6px; border-top:1px solid #eee; }
+.ts-popup-prio label { font-size:11px; color:#555; }
+.ts-popup-prio select { font-size:11px; padding:3px 6px; border-radius:4px; border:1px solid #ccc; background:#f8f8f8; color:#333; cursor:pointer; flex:1; }
+
+/* LEGEND */
+#legend { position:absolute; bottom:24px; right:12px; z-index:1000; background:rgba(13,27,42,0.92); border:1px solid #1e3a5f; border-radius:8px; padding:10px 14px; font-size:11px; color:#8aaec8; }
+.leg-title { font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:#6b8cae; margin-bottom:7px; }
+.leg-row { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+.leg-dot { width:10px; height:10px; border-radius:50%; }
+.leg-sep { border-top:1px solid #1e3a5f; margin:8px 0; }
+.work-note { margin:0 0 4px; background:#1e3200; border:1px solid #3a5a00; border-radius:6px; padding:8px 10px; font-size:10px; color:#a0c060; line-height:1.5; }
+
+/* ============================================================
+   MOBILE — elementi nascosti/visibili
+============================================================ */
+
+/* Forza layout mobile via JS class */
+body.mobile #header-right { display:none !important; }
+body.mobile #mob-header-kpi { display:flex !important; }
+body.mobile #sidebar { display:none !important; }
+body.mobile #mob-fab { display:flex !important; }
+body.mobile #mob-drawer { display:flex !important; }
+body.mobile #legend { bottom:80px; right:10px; padding:8px 10px; font-size:10px; }
+body.mobile .leg-title { font-size:9px; }
+body.mobile #header { padding:10px 14px; }
+body.mobile #header-title { font-size:13px; }
+body.mobile #header-sub { display:none; }
+body.mobile .mob-kpi { text-align:right; padding-left:14px; border-left:1px solid #1e3a5f; }
+body.mobile .mob-kpi:first-child { border-left:none; }
+body.mobile .mob-kpi-val { font-size:16px; font-weight:600; line-height:1; }
+body.mobile .mob-kpi-label { font-size:9px; color:#6b8cae; text-transform:uppercase; letter-spacing:.04em; margin-top:1px; }
+
+#mob-fab { display:none; }
+#mob-drawer { display:none; }
+#mob-header-kpi { display:none; }
+
+/* ============================================================
+   RESPONSIVE — sotto 768px
+============================================================ */
+@media (max-width: 480px) {
+
+  /* Header compatto */
+  #header { padding:10px 14px; }
+  #header-title { font-size:13px; }
+  #header-sub { display:none; }
+  #header-right { display:none; }
+  #mob-header-kpi { display:flex; gap:0; margin-left:auto; }
+  .mob-kpi { text-align:right; padding-left:14px; border-left:1px solid #1e3a5f; margin-left:0; }
+  .mob-kpi:first-child { border-left:none; }
+  .mob-kpi-val { font-size:16px; font-weight:600; line-height:1; }
+  .mob-kpi-label { font-size:9px; color:#6b8cae; text-transform:uppercase; letter-spacing:.04em; margin-top:1px; }
+
+  /* Sidebar nascosta */
+  #sidebar { display:none; }
+
+  /* Mappa a schermo intero */
+  #map-wrap { flex:1; }
+
+  /* Legenda più piccola e spostata */
+  #legend { bottom:80px; right:10px; padding:8px 10px; font-size:10px; }
+  .leg-title { font-size:9px; }
+
+  /* FAB — bottone fluttuante */
+  #mob-fab {
+    display:flex;
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:2000;
+    gap:0;
+    background:#111e2e;
+    border:1px solid #2a4a6e;
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:0 4px 20px rgba(0,0,0,0.5);
+  }
+  .fab-btn {
+    display:flex; align-items:center; gap:6px;
+    padding:10px 18px;
+    font-size:12px; font-weight:600;
+    color:#8aaec8;
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    transition:all .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .fab-btn.active { background:#1a3a5a; color:#2ca1fe; }
+  .fab-btn:first-child { border-right:1px solid #2a4a6e; }
+  .fab-icon { font-size:15px; line-height:1; }
+
+  /* DRAWER */
+  #mob-drawer {
+    display:flex;
+    flex-direction:column;
+    position:fixed;
+    bottom:0; left:0; right:0;
+    z-index:1500;
+    background:#111e2e;
+    border-top:1px solid #1e3a5f;
+    border-radius:16px 16px 0 0;
+    transform:translateY(100%);
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+    max-height:70vh;
+    box-shadow:0 -4px 24px rgba(0,0,0,0.5);
+  }
+  #mob-drawer.open { transform:translateY(0); }
+
+  /* Handle */
+  #drawer-handle {
+    width:36px; height:4px;
+    background:#2a4a6e;
+    border-radius:2px;
+    margin:10px auto 0;
+    flex-shrink:0;
+    cursor:pointer;
+  }
+
+  /* Tab bar nel drawer */
+  #drawer-tabs {
+    display:flex;
+    border-bottom:1px solid #1e3a5f;
+    flex-shrink:0;
+    margin-top:6px;
+  }
+  .drawer-tab {
+    flex:1; padding:10px 0;
+    text-align:center;
+    font-size:12px; font-weight:600;
+    color:#6b8cae;
+    background:transparent;
+    border:none; border-bottom:2px solid transparent;
+    cursor:pointer;
+    transition:all .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .drawer-tab.active { color:#2ca1fe; border-bottom-color:#2ca1fe; }
+
+  /* Contenuto tab */
+  .drawer-panel { display:none; flex:1; overflow:hidden; flex-direction:column; }
+  .drawer-panel.active { display:flex; }
+
+  /* Panel filtri mobile */
+  #mob-filters { padding:12px 14px; overflow-y:auto; flex:1; }
+  #mob-filters .filter-label { font-size:10px; color:#6b8cae; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+  #mob-filters .filter-group { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  #mob-filters .fbtn { font-size:12px; padding:6px 12px; }
+
+  /* Panel lista mobile */
+  #mob-list-header { padding:10px 14px 6px; font-size:10px; color:#6b8cae; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid #1e3a5f; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+  #mob-list-count { font-size:11px; color:#2ca1fe; font-weight:600; }
+  #mob-attivita-list { flex:1; overflow-y:auto; }
+  #mob-attivita-list .list-item { padding:12px 14px; }
+  #mob-attivita-list .li-cliente { font-size:13px; }
+}
+
+/* ============================================================
+   DEMO GUIDATA
+============================================================ */
+#demo-top { flex-shrink:0; }
+.demo-banner { background:rgba(245,158,11,0.13); border-top:1px solid rgba(245,158,11,0.25); padding:7px 20px; font-size:12px; color:#fbbf24; text-align:center; }
+.demo-banner strong { font-weight:600; }
+.demo-cta { display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; padding:9px 20px; background:rgba(44,161,254,0.14); border-top:1px solid #1e3a5f; border-bottom:1px solid #1e3a5f; font-size:13px; color:#8aaec8; }
+.demo-back { font-size:11px; color:#8aaec8; text-decoration:none; letter-spacing:.06em; text-transform:uppercase; margin-right:auto; }
+.demo-back:hover { color:#2ca1fe; }
+.btn-demo { font-family:inherit; font-size:13px; font-weight:600; padding:8px 16px; border-radius:8px; cursor:pointer; background:rgba(51,214,166,0.12); color:#33d6a6; border:1px solid rgba(51,214,166,0.3); }
+.btn-demo:hover { background:rgba(51,214,166,0.2); }
+.btn-demo:disabled { opacity:.65; cursor:wait; }
+.btn-demo.attira { animation:demoPulse 1.3s ease-in-out infinite; }
+@keyframes demoPulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(51,214,166,0.65); transform:scale(1); }
+  50% { box-shadow:0 0 0 12px rgba(51,214,166,0); transform:scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) { .btn-demo.attira { animation:none; box-shadow:0 0 0 3px rgba(51,214,166,0.55); } }
+.demo-active { outline:2px solid #33d6a6; outline-offset:2px; border-radius:8px; }
+#demo-caption { display:none; position:absolute; top:12px; left:60px; right:12px; max-width:540px; margin:0 auto; z-index:1100; background:rgba(13,27,42,0.96); border:1px solid #2ca1fe; border-radius:10px; padding:10px 14px; font-size:13px; line-height:1.45; color:#e0e8f0; box-shadow:0 4px 20px rgba(0,0,0,0.5); pointer-events:none; }
+#demo-caption b { color:#fff; }
+#demo-caption .cap-n { display:inline-block; font-size:10px; font-weight:700; color:#0d1b2a; background:#33d6a6; border-radius:8px; padding:1px 7px; margin-right:8px; vertical-align:1px; }
+body.demo-run #body { pointer-events:none; }
+@media (max-width:480px) {
+  .demo-cta span { display:none; }
+  .demo-banner { font-size:11px; padding:6px 10px; }
+  #demo-caption { left:56px; font-size:12px; }
+}
+
+/* ============================================================
+   TEMA PROFESSIONALE (stessi colori e font del sito)
+============================================================ */
+:root { --bg:#070d1a; --panel:#0c1729; --card:#101f36; --line:rgba(255,255,255,0.08); --txt:#eef3fa; --dim:#9fb0c6; --acc:#2ca1fe; }
+body { font-family:'DM Sans','Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--txt); -webkit-font-smoothing:antialiased; }
+#header { background:linear-gradient(180deg,#0f1e36,#0a1424); border-bottom:1px solid var(--line); padding:12px 24px; }
+#logo-mark { width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#2ca1fe,#1a5fa8); font-family:'Sora',sans-serif; font-size:14px; letter-spacing:.02em; box-shadow:0 4px 14px rgba(44,161,254,0.35); }
+#header-title { font-family:'Sora',sans-serif; font-size:16px; font-weight:600; letter-spacing:-.01em; color:var(--txt); }
+#header-sub { color:var(--dim); font-size:12px; }
+#header-right { gap:10px; }
+.h-kpi { text-align:left; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:7px 14px; min-width:96px; }
+.h-kpi-val { font-family:'Sora',sans-serif; font-size:20px; font-weight:600; }
+.h-kpi-label { color:var(--dim); }
+
+#sidebar { width:310px; background:var(--panel); border-right:1px solid var(--line); }
+#filters { padding:16px; border-bottom:1px solid var(--line); }
+.filter-label { color:var(--dim); font-weight:600; font-size:10.5px; letter-spacing:.08em; margin-bottom:8px; }
+.fbtn { font-family:inherit; font-size:12px; padding:5px 11px; border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--dim); }
+.fbtn:hover:not(.active) { border-color:rgba(44,161,254,0.5); color:#fff; background:rgba(44,161,254,0.08); }
+.fbtn.tutti-btn.active { background:rgba(255,255,255,0.12); color:#fff; border-color:rgba(255,255,255,0.25); }
+.fbtn-alta { border-color:#e05c2a; } .fbtn-media { border-color:#f0a020; } .fbtn-bassa { border-color:#4a9a6a; }
+.fbtn-alta.active { background:#e05c2a; color:#fff; } .fbtn-media.active { background:#f0a020; color:#000; } .fbtn-bassa.active { background:#4a9a6a; color:#fff; }
+.work-note { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); color:#fbbf24; border-radius:8px; }
+#list-header { border-bottom:1px solid var(--line); padding:12px 16px 8px; color:var(--dim); font-weight:600; }
+.list-item { padding:11px 16px; border-bottom:1px solid var(--line); }
+.list-item:hover { background:rgba(44,161,254,0.07); }
+.list-item.selected { background:rgba(44,161,254,0.12); border-left:3px solid var(--acc); }
+.li-cliente { font-size:12.5px; font-weight:600; color:var(--txt); }
+.li-tipo { background:rgba(255,255,255,0.07); color:var(--dim); border-radius:6px; font-weight:600; letter-spacing:.03em; }
+.li-citta, .li-tecnico { color:var(--dim); }
+
+.leaflet-control-zoom { border:none !important; box-shadow:0 4px 16px rgba(0,0,0,0.35) !important; border-radius:10px !important; overflow:hidden; }
+.leaflet-control-zoom a { background:var(--panel) !important; color:var(--txt) !important; border-bottom:1px solid var(--line) !important; }
+.leaflet-control-zoom a:hover { background:var(--card) !important; }
+.leaflet-control-attribution { background:rgba(255,255,255,0.75) !important; font-size:10px !important; }
+.leaflet-popup-content-wrapper { border-radius:12px; box-shadow:0 10px 30px rgba(7,13,26,0.35); }
+.leaflet-popup-content { margin:12px 14px; font-family:'DM Sans',sans-serif; }
+.ts-popup-title { font-family:'Sora',sans-serif; }
+.ts-popup-row { font-size:12px; padding:4px 0; }
+#legend { background:rgba(12,23,41,0.95); border:1px solid var(--line); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.35); padding:12px 16px; }
+.leg-title, .leg-row { font-family:inherit; }
+#demo-caption { font-family:'DM Sans',sans-serif; border-radius:12px; }
+.demo-banner { font-size:11.5px; }
+.demo-cta { background:rgba(44,161,254,0.1); }
+@media (max-width:480px) { #header { padding:10px 14px; } #sidebar { width:auto; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div id="header-left">
+    <div id="logo-mark">AD</div>
+    <div>
+      <div id="header-title">Mappa Operativa</div>
+      <div id="header-sub">Gestione interventi &#183; Emilia-Romagna &#183; Demo</div>
+    </div>
+  </div>
+  <!-- KPI desktop -->
+  <div id="header-right">
+    <div class="h-kpi"><div class="h-kpi-val" id="kpi-aperte" style="color:#e05c2a;">--</div><div class="h-kpi-label">Aperte</div></div>
+    <div class="h-kpi"><div class="h-kpi-val" id="kpi-dafare" style="color:#f0a020;">--</div><div class="h-kpi-label">Da pianif.</div></div>
+    <div class="h-kpi"><div class="h-kpi-val" id="kpi-pianificate" style="color:#2ca1fe;">--</div><div class="h-kpi-label">Pianificate</div></div>
+    <div class="h-kpi"><div class="h-kpi-val" id="kpi-totale" style="color:#60b880;">--</div><div class="h-kpi-label">Totale</div></div>
+  </div>
+  <!-- KPI mobile (compatti) -->
+  <div id="mob-header-kpi">
+    <div class="mob-kpi"><div class="mob-kpi-val" id="mob-kpi-aperte" style="color:#e05c2a;">--</div><div class="mob-kpi-label">Aperte</div></div>
+    <div class="mob-kpi"><div class="mob-kpi-val" id="mob-kpi-dafare" style="color:#f0a020;">--</div><div class="mob-kpi-label">Da fare</div></div>
+    <div class="mob-kpi"><div class="mob-kpi-val" id="mob-kpi-totale" style="color:#60b880;">--</div><div class="mob-kpi-label">Totale</div></div>
+  </div>
+</div>
+
+
+<!-- DEMO: banner + pulsante di avvio -->
+<div id="demo-top">
+  <div class="demo-banner">&#9888; <strong>Strumento dimostrativo</strong> &#8212; Dati fittizi e aziende simulate. Nessuna AI e nessun gestionale collegato: la demo applica filtri e priorit&#224; a un elenco di esempio.</div>
+  <div class="demo-cta">
+    <a class="demo-back" href="https://alessandrodardi.it/">&#8592; Portfolio</a>
+    <span>Guarda come un responsabile usa la mappa per decidere dove mandare i tecnici.</span>
+    <button class="btn-demo attira" id="demo-run-btn" onclick="avviaDemo()">&#9654; Avvia la demo</button>
+  </div>
+</div>
+
+<!-- BODY -->
+<div id="body">
+
+  <!-- SIDEBAR DESKTOP -->
+  <div id="sidebar">
+    <div id="filters">
+      <div class="filter-label">Stato <span style="color:#3a6a9e;font-size:9px;">(selezione multipla)</span></div>
+      <div class="filter-group">
+        <button class="fbtn tutti-btn active" data-group="stato" data-val="ALL">Tutti</button>
+        <button class="fbtn" data-group="stato" data-val="DA FARE">Da fare</button>
+        <button class="fbtn" data-group="stato" data-val="PIANIFICATA">Pianificate</button>
+        <button class="fbtn" data-group="stato" data-val="STAND BY">Stand by</button>
+        <button class="fbtn" data-group="stato" data-val="DA RIPIANIFICARE">Da riplan.</button>
+        <button class="fbtn" data-group="stato" data-val="ATTIVITA_FATTA">Chiuse</button>
+      </div>
+      <div class="filter-label">Tipo <span style="color:#3a6a9e;font-size:9px;">(selezione multipla)</span></div>
+      <div class="filter-group">
+        <button class="fbtn tutti-btn active" data-group="tipo" data-val="ALL">Tutti</button>
+        <button class="fbtn" data-group="tipo" data-val="CH">CH</button>
+        <button class="fbtn" data-group="tipo" data-val="MP">MP</button>
+        <button class="fbtn" data-group="tipo" data-val="INT">INT</button>
+        <button class="fbtn" data-group="tipo" data-val="NOR_CON">NOR_CON</button>
+        <button class="fbtn" data-group="tipo" data-val="MC">MC</button>
+      </div>
+      <div class="filter-label">Tecnico <span style="color:#3a6a9e;font-size:9px;">(selezione multipla)</span></div>
+      <div class="filter-group">
+        <button class="fbtn tutti-btn active" data-group="tecnico" data-val="ALL">Tutti</button>
+        <button class="fbtn" data-group="tecnico" data-val="Marco F.">Marco</button>
+        <button class="fbtn" data-group="tecnico" data-val="Luca B.">Luca</button>
+        <button class="fbtn" data-group="tecnico" data-val="Sara M.">Sara</button>
+        <button class="fbtn" data-group="tecnico" data-val="Roberto A.">Roberto</button>
+        <button class="fbtn" data-group="tecnico" data-val="Davide T.">Davide</button>
+      </div>
+      <div class="filter-label">Priorit&#224; <span style="color:#3a6a9e;font-size:9px;">(selezione multipla)</span></div>
+      <div class="filter-group">
+        <button class="fbtn tutti-btn active" data-group="priorita" data-val="ALL">Tutti</button>
+        <button class="fbtn fbtn-alta" data-group="priorita" data-val="Alta">Alta</button>
+        <button class="fbtn fbtn-media" data-group="priorita" data-val="Media">Media</button>
+        <button class="fbtn fbtn-bassa" data-group="priorita" data-val="Bassa">Bassa</button>
+        <button class="fbtn" data-group="priorita" data-val="">Non assegnata</button>
+      </div>
+      <div class="work-note">&#9888; Dati dimostrativi &#8212; aziende e attivit&#224; fittizie generate per il portfolio</div>
+    </div>
+    <div id="list-header"><span>Attivit&#224;</span><span id="list-count">--</span></div>
+    <div id="attivita-list"></div>
+  </div>
+
+  <!-- MAPPA -->
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="demo-caption" role="status" aria-live="polite"></div>
+    <div id="legend">
+      <div class="leg-title">Stato</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#e05c2a;"></div>Da fare</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#2ca1fe;"></div>Pianificata</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#f0a020;"></div>Stand by</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#c040c0;"></div>Da ripian.</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#4a6a4a;"></div>Chiusa</div>
+      <div class="leg-sep"></div>
+      <div class="leg-title">Priorit&#224;</div>
+      <div class="leg-row"><div class="leg-dot" style="background:transparent;border:2.5px solid #e05c2a;"></div>Alta</div>
+      <div class="leg-row"><div class="leg-dot" style="background:transparent;border:2.5px solid #f0a020;"></div>Media</div>
+      <div class="leg-row"><div class="leg-dot" style="background:transparent;border:2.5px solid #4a9a6a;"></div>Bassa</div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB MOBILE -->
+<div id="mob-fab">
+  <button class="fab-btn" id="fab-lista" onclick="openDrawer('lista')">
+    <span class="fab-icon">&#9776;</span> Lista
+  </button>
+  <button class="fab-btn" id="fab-filtri" onclick="openDrawer('filtri')">
+    <span class="fab-icon">&#9783;</span> Filtri
+  </button>
+</div>
+
+<!-- DRAWER MOBILE -->
+<div id="mob-drawer">
+  <div id="drawer-handle" onclick="closeDrawer()"></div>
+  <div id="drawer-tabs">
+    <button class="drawer-tab active" data-tab="lista" onclick="switchTab('lista')">&#9776; Lista</button>
+    <button class="drawer-tab" data-tab="filtri" onclick="switchTab('filtri')">&#9783; Filtri</button>
+  </div>
+
+  <!-- Tab lista -->
+  <div class="drawer-panel active" id="panel-lista">
+    <div id="mob-list-header"><span>Attivit&#224;</span><span id="mob-list-count">--</span></div>
+    <div id="mob-attivita-list"></div>
+  </div>
+
+  <!-- Tab filtri -->
+  <div class="drawer-panel" id="panel-filtri">
+    <div id="mob-filters">
+      <div class="filter-label">Stato</div>
+      <div class="filter-group">
+        <button class="fbtn tutti-btn active" data-group="stato" data-val="ALL">Tutti</button>
+        <button class="fbtn" data-group="stato" data-val="DA FARE">Da fare</button>
+        <button class="fbtn" data-group="stato" data-val="PIANIFICATA">Pianificate</button>
+        <button class="fbtn" data-group="stato" data-val="STAND BY">Stand by</button>
+        <button class="fbtn" data-group="stato" data-val="DA RIPIANIFICARE">Da riplan.</button>
+        <button class="fbtn" data-group="stato" data-val="ATTIVITA_FATTA">Chiuse</button>
+      </div>
+      <div class="filter-label">Tipo</div>
+      <div class="filter-group">
+        <button class="fbtn tutti-btn active" data-group="tipo" data-val="ALL">Tutti</button>
+        <button class="fbtn" data-group="tipo" data-val="CH">CH</button>
+        <button class="fbtn" data-group="tipo" data-val="MP">MP</button>
+        <button class="fbtn" data-group="tipo" data-val="INT">INT</button>
+        <button class="fbtn" data-group="tipo" data-val="NOR_CON">NOR_CON</button>
+        <button class="fbtn" data-group="tipo" data-val="MC">MC</button>
+      </div>
+      <div class="filter-label">Tecnico</div>
+      <div class="filter-group">
+        <button class="fbtn tutti-btn active" data-group="tecnico" data-val="ALL">Tutti</button>
+        <button class="fbtn" data-group="tecnico" data-val="Marco F.">Marco</button>
+        <button class="fbtn" data-group="tecnico" data-val="Luca B.">Luca</button>
+        <button class="fbtn" data-group="tecnico" data-val="Sara M.">Sara</button>
+        <button class="fbtn" data-group="tecnico" data-val="Roberto A.">Roberto</button>
+        <button class="fbtn" data-group="tecnico" data-val="Davide T.">Davide</button>
+      </div>
+      <div class="filter-label">Priorit&#224;</div>
+      <div class="filter-group">
+        <button class="fbtn tutti-btn active" data-group="priorita" data-val="ALL">Tutti</button>
+        <button class="fbtn fbtn-alta" data-group="priorita" data-val="Alta">Alta</button>
+        <button class="fbtn fbtn-media" data-group="priorita" data-val="Media">Media</button>
+        <button class="fbtn fbtn-bassa" data-group="priorita" data-val="Bassa">Bassa</button>
+        <button class="fbtn" data-group="priorita" data-val="">Non assegnata</button>
+      </div>
+      <div class="work-note">&#9888; Dati dimostrativi &#8212; aziende e attivit&#224; fittizie generate per il portfolio</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var DB = [{"cliente":"LOGISTICA ADRIATICA SPA","attivita":"190203","tipo":"MP","citta":"IMOLA","zona":4,"data_scad":"09/01/2023","tecnico":"Luca B.","data_pian":"11/01/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.3535,"lng":11.714},{"cliente":"VERNICIATURA EMILIANA SPA","attivita":"190225","tipo":"CH","citta":"CASALECCHIO DI RENO","zona":6,"data_scad":"11/01/2023","tecnico":"Luca B.","data_pian":"11/01/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4744,"lng":11.2722},{"cliente":"TRASPORTI DELTA SPA","attivita":"190363","tipo":"CH","citta":"COMACCHIO","zona":13,"data_scad":"10/01/2023","tecnico":"Davide T.","data_pian":"13/01/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.6978,"lng":12.1822},{"cliente":"FONDERIE PIANURA SRL","attivita":"190254","tipo":"MP","citta":"SAN FELICE SUL PANARO","zona":20,"data_scad":"12/01/2023","tecnico":"Roberto A.","data_pian":"14/01/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.8424,"lng":11.1449},{"cliente":"MOBILITA' ESTENSE SPA","attivita":"190444","tipo":"MC","citta":"FERRARA","zona":9,"data_scad":"16/01/2023","tecnico":"Luca B.","data_pian":"17/01/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.8354,"lng":11.6198},{"cliente":"STAMPI PRECISIONE SRL","attivita":"190176","tipo":"CH","citta":"CALDERARA DI RENO","zona":5,"data_scad":"28/01/2023","tecnico":"Luca B.","data_pian":"31/01/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5641,"lng":11.2672},{"cliente":"PORTE INDUSTRIALI EMILIA SRL","attivita":"190165","tipo":"NOR_CON","citta":"SAN LAZZARO DI SAVENA","zona":4,"data_scad":"29/01/2023","tecnico":"Luca B.","data_pian":"31/01/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.4699,"lng":11.4081},{"cliente":"FONDERIA PIANURA SPA","attivita":"190384","tipo":"CH","citta":"MOLINELLA","zona":2,"data_scad":"29/01/2023","tecnico":"Davide T.","data_pian":"01/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.6195,"lng":11.672},{"cliente":"IDROPRESS OVEST SRL","attivita":"190217","tipo":"CH","citta":"SAN GIOVANNI IN PERSICETO","zona":5,"data_scad":"01/02/2023","tecnico":"Davide T.","data_pian":"02/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.638,"lng":11.1878},{"cliente":"AGROFRIGOR SRL","attivita":"190051","tipo":"MP","citta":"FOSSATONE DI MEDICINA","zona":2,"data_scad":"02/02/2023","tecnico":"Luca B.","data_pian":"02/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.49,"lng":11.67},{"cliente":"CARPENTERIA APPENNINO SRL","attivita":"190460","tipo":"NOR_CON","citta":"MARZABOTTO","zona":7,"data_scad":"01/02/2023","tecnico":"Sara M.","data_pian":"03/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PAUSA PRANZO","lat":44.3369,"lng":11.2009},{"cliente":"STAMPI PRECISIONE SRL","attivita":"190226","tipo":"MP","citta":"CALDERARA DI RENO","zona":5,"data_scad":"03/02/2023","tecnico":"Roberto A.","data_pian":"04/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5641,"lng":11.2672},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190097","tipo":"NOR_CON","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"05/02/2023","tecnico":"Roberto A.","data_pian":"05/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.5537,"lng":11.4471},{"cliente":"PNEUMATEC SRL","attivita":"190343","tipo":"MP","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"05/02/2023","tecnico":"Davide T.","data_pian":"06/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5647,"lng":11.3706},{"cliente":"PNEUMATEC SRL","attivita":"190087","tipo":"INT","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"08/02/2023","tecnico":"Marco F.","data_pian":"09/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5647,"lng":11.3706},{"cliente":"COMPRESSORI PADANA SPA","attivita":"190112","tipo":"NOR_CON","citta":"ZOLA PREDOSA","zona":6,"data_scad":"08/02/2023","tecnico":"Marco F.","data_pian":"09/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.493,"lng":11.2135},{"cliente":"INDUSTRIE PIANURA SPA","attivita":"190055","tipo":"MP","citta":"SALA BOLOGNESE","zona":5,"data_scad":"10/02/2023","tecnico":"Davide T.","data_pian":"13/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.6238,"lng":11.2507},{"cliente":"METALSTAMP SRL","attivita":"190124","tipo":"CH","citta":"SAN GIOVANNI IN PERSICETO","zona":5,"data_scad":"12/02/2023","tecnico":"Marco F.","data_pian":"13/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.638,"lng":11.1878},{"cliente":"VETRERIA PADANA SPA","attivita":"190455","tipo":"CH","citta":"PORTOMAGGIORE","zona":13,"data_scad":"13/02/2023","tecnico":"Luca B.","data_pian":"14/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.6975,"lng":11.8061},{"cliente":"REFRIGERAZIONE RENO SRL","attivita":"190180","tipo":"CH","citta":"PORRETTA TERME","zona":7,"data_scad":"13/02/2023","tecnico":"Davide T.","data_pian":"15/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.1579,"lng":10.9992},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190036","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"14/02/2023","tecnico":"Luca B.","data_pian":"15/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5647,"lng":11.3706},{"cliente":"TIPOGRAFIA ALDINI SRL","attivita":"190138","tipo":"MC","citta":"MARZABOTTO","zona":7,"data_scad":"15/02/2023","tecnico":"Davide T.","data_pian":"15/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIAMARE PRIMA DI ANDARE","lat":44.3369,"lng":11.2009},{"cliente":"FLUIDOTECH ITALIA SRL","attivita":"190028","tipo":"INT","citta":"ZOLA PREDOSA","zona":6,"data_scad":"18/02/2023","tecnico":"Roberto A.","data_pian":"19/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.493,"lng":11.2135},{"cliente":"FONDERIE PIANURA SRL","attivita":"190074","tipo":"MC","citta":"SAN FELICE SUL PANARO","zona":20,"data_scad":"21/02/2023","tecnico":"Davide T.","data_pian":"24/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.8424,"lng":11.1449},{"cliente":"MINUTERIA REGGIANA SRL","attivita":"190213","tipo":"MP","citta":"QUATTRO CASTELLA","zona":45,"data_scad":"25/02/2023","tecnico":"Luca B.","data_pian":"26/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.5797,"lng":10.4617},{"cliente":"MINUTERIA REGGIANA SRL","attivita":"190392","tipo":"NOR_CON","citta":"QUATTRO CASTELLA","zona":45,"data_scad":"24/02/2023","tecnico":"Roberto A.","data_pian":"27/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PAUSA PRANZO","lat":44.5797,"lng":10.4617},{"cliente":"COOPERATIVA METALMECCANICA EMILIANA","attivita":"190459","tipo":"MP","citta":"SAN GIORGIO DI PIANO","zona":3,"data_scad":"28/02/2023","tecnico":"Luca B.","data_pian":"28/02/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.6493,"lng":11.3724},{"cliente":"MECCANICA PIANORO SRL","attivita":"190096","tipo":"CH","citta":"PIANORO","zona":8,"data_scad":"27/02/2023","tecnico":"Roberto A.","data_pian":"02/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.3847,"lng":11.3456},{"cliente":"REFRIGERAZIONE RENO SRL","attivita":"190099","tipo":"INT","citta":"PORRETTA TERME","zona":7,"data_scad":"05/03/2023","tecnico":"Luca B.","data_pian":"06/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ATTENDERE CONFERMA","lat":44.1579,"lng":10.9992},{"cliente":"CARPENTERIA COLLI SNC","attivita":"190161","tipo":"MP","citta":"CASALECCHIO DI RENO","zona":6,"data_scad":"07/03/2023","tecnico":"Davide T.","data_pian":"07/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4744,"lng":11.2722},{"cliente":"OFFICINA MECCANICA ROVERSI SRL","attivita":"190284","tipo":"MP","citta":"CALDERARA DI RENO","zona":5,"data_scad":"08/03/2023","tecnico":"Sara M.","data_pian":"09/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.5641,"lng":11.2672},{"cliente":"INDUSTRIE PIANURA SPA","attivita":"190294","tipo":"MP","citta":"SALA BOLOGNESE","zona":5,"data_scad":"11/03/2023","tecnico":"Davide T.","data_pian":"11/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.6238,"lng":11.2507},{"cliente":"COOPERATIVA Po SRL","attivita":"190328","tipo":"CH","citta":"REVERE","zona":61,"data_scad":"11/03/2023","tecnico":"Luca B.","data_pian":"12/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":45.0517,"lng":11.1311},{"cliente":"COOPERATIVA METALMECCANICA EMILIANA","attivita":"190348","tipo":"NOR_SOST","citta":"SAN GIORGIO DI PIANO","zona":3,"data_scad":"10/03/2023","tecnico":"Davide T.","data_pian":"13/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.6493,"lng":11.3724},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190148","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"18/03/2023","tecnico":"Marco F.","data_pian":"20/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.5647,"lng":11.3706},{"cliente":"VERNICIATURA EMILIANA SPA","attivita":"190426","tipo":"MP","citta":"CASALECCHIO DI RENO","zona":6,"data_scad":"24/03/2023","tecnico":"Davide T.","data_pian":"27/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ATTENDERE CONFERMA","lat":44.4744,"lng":11.2722},{"cliente":"PORTE INDUSTRIALI EMILIA SRL","attivita":"190163","tipo":"MP","citta":"SAN LAZZARO DI SAVENA","zona":4,"data_scad":"25/03/2023","tecnico":"Marco F.","data_pian":"28/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4699,"lng":11.4081},{"cliente":"VETRERIA PADANA SPA","attivita":"190241","tipo":"CH","citta":"PORTOMAGGIORE","zona":13,"data_scad":"27/03/2023","tecnico":"Luca B.","data_pian":"28/03/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.6975,"lng":11.8061},{"cliente":"TERMOFLEX SRL","attivita":"190019","tipo":"INT","citta":"BOLOGNA","zona":1,"data_scad":"31/03/2023","tecnico":"Sara M.","data_pian":"03/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4938,"lng":11.3426},{"cliente":"TIPOGRAFIA ALDINI SRL","attivita":"190396","tipo":"INT","citta":"MARZABOTTO","zona":7,"data_scad":"01/04/2023","tecnico":"Roberto A.","data_pian":"03/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.3369,"lng":11.2009},{"cliente":"COMPRESSORI PADANA SPA","attivita":"190210","tipo":"MP","citta":"ZOLA PREDOSA","zona":6,"data_scad":"05/04/2023","tecnico":"Davide T.","data_pian":"05/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.493,"lng":11.2135},{"cliente":"VERNICIATURA EMILIANA SPA","attivita":"190171","tipo":"NOR_CON","citta":"CASALECCHIO DI RENO","zona":6,"data_scad":"09/04/2023","tecnico":"Luca B.","data_pian":"12/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.4744,"lng":11.2722},{"cliente":"FONDERIA PIANURA SPA","attivita":"190103","tipo":"CH","citta":"MOLINELLA","zona":2,"data_scad":"12/04/2023","tecnico":"Luca B.","data_pian":"14/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.6195,"lng":11.672},{"cliente":"LOGISTICA MANTOVANA SRL","attivita":"190118","tipo":"MP","citta":"OSTIGLIA","zona":61,"data_scad":"16/04/2023","tecnico":"Marco F.","data_pian":"18/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIAMARE PRIMA DI ANDARE","lat":45.0686,"lng":11.1356},{"cliente":"LAVORAZIONI CASTEL SNC","attivita":"190188","tipo":"NOR_CON","citta":"CASTEL GUELFO DI BOLOGNA","zona":4,"data_scad":"16/04/2023","tecnico":"Roberto A.","data_pian":"18/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4359,"lng":11.681},{"cliente":"OFFICINA MECCANICA BERNI SNC","attivita":"190280","tipo":"MC","citta":"BOLOGNA","zona":1,"data_scad":"21/04/2023","tecnico":"Luca B.","data_pian":"21/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4938,"lng":11.3426},{"cliente":"AUTOMAZIONE INDUSTRIALE NORD SPA","attivita":"190080","tipo":"MP","citta":"NONANTOLA","zona":19,"data_scad":"27/04/2023","tecnico":"Roberto A.","data_pian":"28/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.6786,"lng":11.0417},{"cliente":"TIPOGRAFIA ALDINI SRL","attivita":"190308","tipo":"CH","citta":"MARZABOTTO","zona":7,"data_scad":"27/04/2023","tecnico":"Sara M.","data_pian":"29/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.3369,"lng":11.2009},{"cliente":"PLASTIFORM SAS","attivita":"190273","tipo":"MP","citta":"VALSALAGGIA LOC. BAZZANO","zona":6,"data_scad":"27/04/2023","tecnico":"Sara M.","data_pian":"30/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.5121,"lng":11.104},{"cliente":"POLIMERI NORD SAS","attivita":"190140","tipo":"CH","citta":"ARGELATO","zona":3,"data_scad":"28/04/2023","tecnico":"Sara M.","data_pian":"30/04/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.6197,"lng":11.3488},{"cliente":"TRASPORTI DELTA SPA","attivita":"190420","tipo":"MP","citta":"COMACCHIO","zona":13,"data_scad":"04/05/2023","tecnico":"Marco F.","data_pian":"04/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.6978,"lng":12.1822},{"cliente":"OFFICINA MECCANICA BERNI SNC","attivita":"190319","tipo":"CH","citta":"BOLOGNA","zona":1,"data_scad":"02/05/2023","tecnico":"Sara M.","data_pian":"05/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.4938,"lng":11.3426},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190177","tipo":"CH","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"05/05/2023","tecnico":"Luca B.","data_pian":"06/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.5537,"lng":11.4471},{"cliente":"OFFICINA MECCANICA BERNI SNC","attivita":"190012","tipo":"CH","citta":"BOLOGNA","zona":1,"data_scad":"08/05/2023","tecnico":"Luca B.","data_pian":"08/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.4938,"lng":11.3426},{"cliente":"PNEUMATEC SRL","attivita":"190237","tipo":"INT","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"09/05/2023","tecnico":"Sara M.","data_pian":"11/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.5647,"lng":11.3706},{"cliente":"TERMOFLEX SRL","attivita":"190108","tipo":"MC","citta":"BOLOGNA","zona":1,"data_scad":"10/05/2023","tecnico":"Roberto A.","data_pian":"11/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.4938,"lng":11.3426},{"cliente":"REFRIGERAZIONE RENO SRL","attivita":"190091","tipo":"CH","citta":"PORRETTA TERME","zona":7,"data_scad":"10/05/2023","tecnico":"Luca B.","data_pian":"12/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ATTENDERE CONFERMA","lat":44.1579,"lng":10.9992},{"cliente":"MINUTERIA REGGIANA SRL","attivita":"190416","tipo":"MP","citta":"QUATTRO CASTELLA","zona":45,"data_scad":"11/05/2023","tecnico":"Davide T.","data_pian":"12/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5797,"lng":10.4617},{"cliente":"IDROPRESS OVEST SRL","attivita":"190437","tipo":"NOR_SOST","citta":"SAN GIOVANNI IN PERSICETO","zona":5,"data_scad":"11/05/2023","tecnico":"Roberto A.","data_pian":"14/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.638,"lng":11.1878},{"cliente":"PORTE INDUSTRIALI EMILIA SRL","attivita":"190465","tipo":"MP","citta":"SAN LAZZARO DI SAVENA","zona":4,"data_scad":"14/05/2023","tecnico":"Luca B.","data_pian":"17/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4699,"lng":11.4081},{"cliente":"FLUIDOTECH ITALIA SRL","attivita":"190472","tipo":"MP","citta":"ZOLA PREDOSA","zona":6,"data_scad":"19/05/2023","tecnico":"Marco F.","data_pian":"22/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.493,"lng":11.2135},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190064","tipo":"CH","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"23/05/2023","tecnico":"Marco F.","data_pian":"24/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5537,"lng":11.4471},{"cliente":"OFFICINA MECCANICA ROVERSI SRL","attivita":"190159","tipo":"INT","citta":"CALDERARA DI RENO","zona":5,"data_scad":"23/05/2023","tecnico":"Davide T.","data_pian":"24/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.5641,"lng":11.2672},{"cliente":"PLASTIFORM SAS","attivita":"190182","tipo":"CH","citta":"VALSALAGGIA LOC. BAZZANO","zona":6,"data_scad":"24/05/2023","tecnico":"Davide T.","data_pian":"24/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.5121,"lng":11.104},{"cliente":"COMPRESSORI PADANA SPA","attivita":"190359","tipo":"MP","citta":"ZOLA PREDOSA","zona":6,"data_scad":"24/05/2023","tecnico":"Luca B.","data_pian":"24/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.493,"lng":11.2135},{"cliente":"CONSERVIFICIO PARMA NORD SPA","attivita":"190046","tipo":"MP","citta":"PARMA","zona":26,"data_scad":"24/05/2023","tecnico":"Davide T.","data_pian":"25/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ATTENDERE CONFERMA","lat":44.8015,"lng":10.3279},{"cliente":"OFFICINA EST SNC","attivita":"190449","tipo":"INT","citta":"BARICELLA","zona":2,"data_scad":"24/05/2023","tecnico":"Roberto A.","data_pian":"26/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.6467,"lng":11.5355},{"cliente":"FLUIDOTECH ITALIA SRL","attivita":"190372","tipo":"INT","citta":"ZOLA PREDOSA","zona":6,"data_scad":"25/05/2023","tecnico":"Marco F.","data_pian":"26/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.493,"lng":11.2135},{"cliente":"LOGISTICA MANTOVANA SRL","attivita":"190134","tipo":"CH","citta":"OSTIGLIA","zona":61,"data_scad":"24/05/2023","tecnico":"Sara M.","data_pian":"27/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":45.0686,"lng":11.1356},{"cliente":"AUTOMAZIONI SAVENA SRL","attivita":"190326","tipo":"INT","citta":"SAN LAZZARO DI SAVENA","zona":4,"data_scad":"27/05/2023","tecnico":"Luca B.","data_pian":"29/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4699,"lng":11.4081},{"cliente":"COOPERATIVA Po SRL","attivita":"190301","tipo":"MP","citta":"REVERE","zona":61,"data_scad":"27/05/2023","tecnico":"Roberto A.","data_pian":"30/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":45.0517,"lng":11.1311},{"cliente":"MINUTERIA REGGIANA SRL","attivita":"190002","tipo":"CH","citta":"QUATTRO CASTELLA","zona":45,"data_scad":"29/05/2023","tecnico":"Luca B.","data_pian":"30/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.5797,"lng":10.4617},{"cliente":"MINUTERIA REGGIANA SRL","attivita":"190155","tipo":"MP","citta":"QUATTRO CASTELLA","zona":45,"data_scad":"30/05/2023","tecnico":"Sara M.","data_pian":"30/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.5797,"lng":10.4617},{"cliente":"AUTOMAZIONE INDUSTRIALE NORD SPA","attivita":"190313","tipo":"INT","citta":"NONANTOLA","zona":19,"data_scad":"30/05/2023","tecnico":"Luca B.","data_pian":"30/05/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.6786,"lng":11.0417},{"cliente":"PLASTIFORM SAS","attivita":"190234","tipo":"INT","citta":"VALSALAGGIA LOC. BAZZANO","zona":6,"data_scad":"30/05/2023","tecnico":"Sara M.","data_pian":"02/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.5121,"lng":11.104},{"cliente":"OFFICINA MECCANICA ROVERSI SRL","attivita":"190429","tipo":"NOR_CON","citta":"CALDERARA DI RENO","zona":5,"data_scad":"30/05/2023","tecnico":"Davide T.","data_pian":"02/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5641,"lng":11.2672},{"cliente":"TRASPORTI DELTA SPA","attivita":"190151","tipo":"CH","citta":"COMACCHIO","zona":13,"data_scad":"02/06/2023","tecnico":"Luca B.","data_pian":"03/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.6978,"lng":12.1822},{"cliente":"SALUMERIA COLLINA BLU SAS","attivita":"190367","tipo":"CH","citta":"MONTE SAN PIETRO","zona":6,"data_scad":"05/06/2023","tecnico":"Marco F.","data_pian":"07/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.4374,"lng":11.2044},{"cliente":"TRASMISSIONI OVEST SRL","attivita":"190413","tipo":"MP","citta":"ZOLA PREDOSA","zona":6,"data_scad":"05/06/2023","tecnico":"Marco F.","data_pian":"08/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.493,"lng":11.2135},{"cliente":"ELETTROMECCANICA FABBRI SRL","attivita":"190424","tipo":"MP","citta":"FUNO DI ARGELATO","zona":5,"data_scad":"07/06/2023","tecnico":"Roberto A.","data_pian":"09/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.605,"lng":11.355},{"cliente":"FLUIDOTECH ITALIA SRL","attivita":"190334","tipo":"MP","citta":"ZOLA PREDOSA","zona":6,"data_scad":"12/06/2023","tecnico":"Luca B.","data_pian":"12/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.493,"lng":11.2135},{"cliente":"TERMOFLEX SRL","attivita":"190431","tipo":"CH","citta":"BOLOGNA","zona":1,"data_scad":"10/06/2023","tecnico":"Roberto A.","data_pian":"13/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ATTENDERE CONFERMA","lat":44.4938,"lng":11.3426},{"cliente":"OLEODINAMICA PADANA SRL","attivita":"190357","tipo":"NOR_SOST","citta":"MODENA","zona":19,"data_scad":"14/06/2023","tecnico":"Marco F.","data_pian":"14/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.6471,"lng":10.9252},{"cliente":"VETRERIA PADANA SPA","attivita":"190119","tipo":"CH","citta":"PORTOMAGGIORE","zona":13,"data_scad":"18/06/2023","tecnico":"Davide T.","data_pian":"18/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.6975,"lng":11.8061},{"cliente":"OLEODINAMICA PADANA SRL","attivita":"190290","tipo":"CH","citta":"MODENA","zona":19,"data_scad":"17/06/2023","tecnico":"Luca B.","data_pian":"20/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.6471,"lng":10.9252},{"cliente":"FONDERIE PIANURA SRL","attivita":"190044","tipo":"NOR_CON","citta":"SAN FELICE SUL PANARO","zona":20,"data_scad":"19/06/2023","tecnico":"Roberto A.","data_pian":"20/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.8424,"lng":11.1449},{"cliente":"AUTOMAZIONI SAVENA SRL","attivita":"190187","tipo":"INT","citta":"SAN LAZZARO DI SAVENA","zona":4,"data_scad":"18/06/2023","tecnico":"Davide T.","data_pian":"21/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4699,"lng":11.4081},{"cliente":"COOPERATIVA Po SRL","attivita":"190302","tipo":"MP","citta":"REVERE","zona":61,"data_scad":"23/06/2023","tecnico":"Sara M.","data_pian":"24/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":45.0517,"lng":11.1311},{"cliente":"OLEODINAMICA PADANA SRL","attivita":"190207","tipo":"MP","citta":"MODENA","zona":19,"data_scad":"22/06/2023","tecnico":"Roberto A.","data_pian":"25/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.6471,"lng":10.9252},{"cliente":"CARPENTERIA APPENNINO SRL","attivita":"190195","tipo":"INT","citta":"MARZABOTTO","zona":7,"data_scad":"25/06/2023","tecnico":"Davide T.","data_pian":"28/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.3369,"lng":11.2009},{"cliente":"COMPRESSORI PADANA SPA","attivita":"190020","tipo":"MC","citta":"ZOLA PREDOSA","zona":6,"data_scad":"30/06/2023","tecnico":"Roberto A.","data_pian":"30/06/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.493,"lng":11.2135},{"cliente":"TRASMISSIONI OVEST SRL","attivita":"190059","tipo":"INT","citta":"ZOLA PREDOSA","zona":6,"data_scad":"02/07/2023","tecnico":"Roberto A.","data_pian":"02/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.493,"lng":11.2135},{"cliente":"VETRERIA PADANA SPA","attivita":"190275","tipo":"CH","citta":"PORTOMAGGIORE","zona":13,"data_scad":"07/07/2023","tecnico":"Marco F.","data_pian":"08/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.6975,"lng":11.8061},{"cliente":"MINUTERIA REGGIANA SRL","attivita":"190027","tipo":"MP","citta":"QUATTRO CASTELLA","zona":45,"data_scad":"13/07/2023","tecnico":"Marco F.","data_pian":"14/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.5797,"lng":10.4617},{"cliente":"OFFICINA MECCANICA BERNI SNC","attivita":"190073","tipo":"CH","citta":"BOLOGNA","zona":1,"data_scad":"13/07/2023","tecnico":"Marco F.","data_pian":"15/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4938,"lng":11.3426},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190031","tipo":"INT","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"14/07/2023","tecnico":"Sara M.","data_pian":"15/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5537,"lng":11.4471},{"cliente":"LAVORAZIONI MEDICINA SRL","attivita":"190297","tipo":"CH","citta":"MEDICINA","zona":2,"data_scad":"13/07/2023","tecnico":"Roberto A.","data_pian":"16/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4742,"lng":11.6358},{"cliente":"IMPIANTI CORVINI SPA","attivita":"190409","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"13/07/2023","tecnico":"Marco F.","data_pian":"16/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5647,"lng":11.3706},{"cliente":"PNEUMATEC SRL","attivita":"190142","tipo":"NOR_CON","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"17/07/2023","tecnico":"Roberto A.","data_pian":"19/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5647,"lng":11.3706},{"cliente":"GOMMATECH SRL","attivita":"190026","tipo":"NOR_SOST","citta":"ANZOLA DELL'EMILIA","zona":5,"data_scad":"21/07/2023","tecnico":"Sara M.","data_pian":"21/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5426,"lng":11.1958},{"cliente":"IDROPRESS OVEST SRL","attivita":"190200","tipo":"MP","citta":"SAN GIOVANNI IN PERSICETO","zona":5,"data_scad":"22/07/2023","tecnico":"Davide T.","data_pian":"23/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.638,"lng":11.1878},{"cliente":"METALSTAMP SRL","attivita":"190469","tipo":"CH","citta":"SAN GIOVANNI IN PERSICETO","zona":5,"data_scad":"23/07/2023","tecnico":"Davide T.","data_pian":"24/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.638,"lng":11.1878},{"cliente":"TIPOGRAFIA ALDINI SRL","attivita":"190439","tipo":"INT","citta":"MARZABOTTO","zona":7,"data_scad":"23/07/2023","tecnico":"Roberto A.","data_pian":"26/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.3369,"lng":11.2009},{"cliente":"CARPENTERIA COLLI SNC","attivita":"190262","tipo":"MP","citta":"CASALECCHIO DI RENO","zona":6,"data_scad":"27/07/2023","tecnico":"Luca B.","data_pian":"29/07/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.4744,"lng":11.2722},{"cliente":"PLASTIFORM SAS","attivita":"190405","tipo":"CH","citta":"VALSALAGGIA LOC. BAZZANO","zona":6,"data_scad":"03/08/2023","tecnico":"Roberto A.","data_pian":"03/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.5121,"lng":11.104},{"cliente":"CARROZZERIA MONTALI SRL","attivita":"190040","tipo":"INT","citta":"BOLOGNA","zona":1,"data_scad":"02/08/2023","tecnico":"Luca B.","data_pian":"04/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.4938,"lng":11.3426},{"cliente":"STAMPI PRECISIONE SRL","attivita":"190381","tipo":"CH","citta":"CALDERARA DI RENO","zona":5,"data_scad":"03/08/2023","tecnico":"Davide T.","data_pian":"05/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.5641,"lng":11.2672},{"cliente":"COMPRESSORI PADANA SPA","attivita":"190246","tipo":"CH","citta":"ZOLA PREDOSA","zona":6,"data_scad":"05/08/2023","tecnico":"Roberto A.","data_pian":"07/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.493,"lng":11.2135},{"cliente":"REFRIGERAZIONE RENO SRL","attivita":"190174","tipo":"INT","citta":"PORRETTA TERME","zona":7,"data_scad":"07/08/2023","tecnico":"Luca B.","data_pian":"08/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.1579,"lng":10.9992},{"cliente":"CONSERVIFICIO PARMA NORD SPA","attivita":"190016","tipo":"INT","citta":"PARMA","zona":26,"data_scad":"11/08/2023","tecnico":"Davide T.","data_pian":"12/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.8015,"lng":10.3279},{"cliente":"LAVORAZIONI CASTEL SNC","attivita":"190274","tipo":"CH","citta":"CASTEL GUELFO DI BOLOGNA","zona":4,"data_scad":"12/08/2023","tecnico":"Roberto A.","data_pian":"14/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4359,"lng":11.681},{"cliente":"IMPIANTI CORVINI SPA","attivita":"190251","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"12/08/2023","tecnico":"Marco F.","data_pian":"15/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5647,"lng":11.3706},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190270","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"16/08/2023","tecnico":"Luca B.","data_pian":"17/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5647,"lng":11.3706},{"cliente":"COOPERATIVA Po SRL","attivita":"190232","tipo":"NOR_CON","citta":"REVERE","zona":61,"data_scad":"15/08/2023","tecnico":"Roberto A.","data_pian":"18/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":45.0517,"lng":11.1311},{"cliente":"PLASTIFORM SAS","attivita":"190049","tipo":"INT","citta":"VALSALAGGIA LOC. BAZZANO","zona":6,"data_scad":"16/08/2023","tecnico":"Luca B.","data_pian":"19/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5121,"lng":11.104},{"cliente":"METALSTAMP SRL","attivita":"190389","tipo":"MP","citta":"SAN GIOVANNI IN PERSICETO","zona":5,"data_scad":"23/08/2023","tecnico":"Davide T.","data_pian":"25/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.638,"lng":11.1878},{"cliente":"PLASTIFORM SAS","attivita":"190116","tipo":"MC","citta":"VALSALAGGIA LOC. BAZZANO","zona":6,"data_scad":"29/08/2023","tecnico":"Davide T.","data_pian":"31/08/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.5121,"lng":11.104},{"cliente":"FONDERIA PIANURA SPA","attivita":"190305","tipo":"CH","citta":"MOLINELLA","zona":2,"data_scad":"03/09/2023","tecnico":"Marco F.","data_pian":"06/09/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.6195,"lng":11.672},{"cliente":"TERMOFLEX SRL","attivita":"190340","tipo":"MP","citta":"BOLOGNA","zona":1,"data_scad":"06/09/2023","tecnico":"Sara M.","data_pian":"09/09/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4938,"lng":11.3426},{"cliente":"OFFICINA MECCANICA ROVERSI SRL","attivita":"190077","tipo":"CH","citta":"CALDERARA DI RENO","zona":5,"data_scad":"09/09/2023","tecnico":"Davide T.","data_pian":"10/09/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5641,"lng":11.2672},{"cliente":"IMPIANTI CORVINI SPA","attivita":"190341","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"10/09/2023","tecnico":"Roberto A.","data_pian":"10/09/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.5647,"lng":11.3706},{"cliente":"VERNICIATURA EMILIANA SPA","attivita":"190317","tipo":"INT","citta":"CASALECCHIO DI RENO","zona":6,"data_scad":"16/09/2023","tecnico":"Roberto A.","data_pian":"17/09/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.4744,"lng":11.2722},{"cliente":"MINUTERIA REGGIANA SRL","attivita":"190066","tipo":"CH","citta":"QUATTRO CASTELLA","zona":45,"data_scad":"25/09/2023","tecnico":"Sara M.","data_pian":"26/09/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.5797,"lng":10.4617},{"cliente":"MINUTERIA REGGIANA SRL","attivita":"190154","tipo":"NOR_CON","citta":"QUATTRO CASTELLA","zona":45,"data_scad":"24/09/2023","tecnico":"Marco F.","data_pian":"27/09/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5797,"lng":10.4617},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190295","tipo":"MP","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"25/09/2023","tecnico":"Roberto A.","data_pian":"27/09/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5647,"lng":11.3706},{"cliente":"CONSERVIFICIO PARMA NORD SPA","attivita":"190081","tipo":"MP","citta":"PARMA","zona":26,"data_scad":"30/09/2023","tecnico":"Luca B.","data_pian":"03/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.8015,"lng":10.3279},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190132","tipo":"MP","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"03/10/2023","tecnico":"Luca B.","data_pian":"05/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.5647,"lng":11.3706},{"cliente":"AMBIENTE SERVIZI SPA","attivita":"190352","tipo":"CH","citta":"MODENA","zona":19,"data_scad":"03/10/2023","tecnico":"Roberto A.","data_pian":"06/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.6471,"lng":10.9252},{"cliente":"FRIGOEMILIA SNC","attivita":"190071","tipo":"MP","citta":"SANT'AGATA BOLOGNESE","zona":5,"data_scad":"07/10/2023","tecnico":"Sara M.","data_pian":"07/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.5813,"lng":11.1389},{"cliente":"AGROFRIGOR SRL","attivita":"190120","tipo":"MC","citta":"FOSSATONE DI MEDICINA","zona":2,"data_scad":"07/10/2023","tecnico":"Davide T.","data_pian":"08/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.49,"lng":11.67},{"cliente":"COOPERATIVA METALMECCANICA EMILIANA","attivita":"190452","tipo":"NOR_CON","citta":"SAN GIORGIO DI PIANO","zona":3,"data_scad":"09/10/2023","tecnico":"Roberto A.","data_pian":"12/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.6493,"lng":11.3724},{"cliente":"INDUSTRIE PIANURA SPA","attivita":"190181","tipo":"NOR_SOST","citta":"SALA BOLOGNESE","zona":5,"data_scad":"10/10/2023","tecnico":"Marco F.","data_pian":"12/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.6238,"lng":11.2507},{"cliente":"MOBILITA' ESTENSE SPA","attivita":"190191","tipo":"MC","citta":"FERRARA","zona":9,"data_scad":"11/10/2023","tecnico":"Roberto A.","data_pian":"12/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.8354,"lng":11.6198},{"cliente":"POLIMERI NORD SAS","attivita":"190007","tipo":"INT","citta":"ARGELATO","zona":3,"data_scad":"15/10/2023","tecnico":"Roberto A.","data_pian":"15/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.6197,"lng":11.3488},{"cliente":"MECCANICA PIANORO SRL","attivita":"190258","tipo":"MP","citta":"PIANORO","zona":8,"data_scad":"15/10/2023","tecnico":"Luca B.","data_pian":"16/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.3847,"lng":11.3456},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190473","tipo":"NOR_CON","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"15/10/2023","tecnico":"Roberto A.","data_pian":"16/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PAUSA PRANZO","lat":44.5537,"lng":11.4471},{"cliente":"PNEUMATEC SRL","attivita":"190104","tipo":"MP","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"17/10/2023","tecnico":"Davide T.","data_pian":"17/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5647,"lng":11.3706},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190400","tipo":"MC","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"17/10/2023","tecnico":"Marco F.","data_pian":"17/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PAUSA PRANZO","lat":44.5647,"lng":11.3706},{"cliente":"MOBILITA' ESTENSE SPA","attivita":"190056","tipo":"CH","citta":"FERRARA","zona":9,"data_scad":"19/10/2023","tecnico":"Davide T.","data_pian":"19/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.8354,"lng":11.6198},{"cliente":"OFFICINA EST SNC","attivita":"190435","tipo":"CH","citta":"BARICELLA","zona":2,"data_scad":"18/10/2023","tecnico":"Sara M.","data_pian":"21/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.6467,"lng":11.5355},{"cliente":"OLEODINAMICA PADANA SRL","attivita":"190323","tipo":"MP","citta":"MODENA","zona":19,"data_scad":"19/10/2023","tecnico":"Davide T.","data_pian":"21/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PAUSA PRANZO","lat":44.6471,"lng":10.9252},{"cliente":"CARROZZERIA MONTALI SRL","attivita":"190336","tipo":"NOR_SOST","citta":"BOLOGNA","zona":1,"data_scad":"19/10/2023","tecnico":"Roberto A.","data_pian":"21/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4938,"lng":11.3426},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190039","tipo":"MP","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"21/10/2023","tecnico":"Marco F.","data_pian":"22/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5537,"lng":11.4471},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190230","tipo":"INT","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"22/10/2023","tecnico":"Davide T.","data_pian":"24/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.5537,"lng":11.4471},{"cliente":"POLIMERI NORD SAS","attivita":"190170","tipo":"MP","citta":"ARGELATO","zona":3,"data_scad":"22/10/2023","tecnico":"Luca B.","data_pian":"25/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.6197,"lng":11.3488},{"cliente":"CARPENTERIA APPENNINO SRL","attivita":"190376","tipo":"MP","citta":"MARZABOTTO","zona":7,"data_scad":"27/10/2023","tecnico":"Marco F.","data_pian":"29/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.3369,"lng":11.2009},{"cliente":"OFFICINA MECCANICA BERNI SNC","attivita":"190387","tipo":"CH","citta":"BOLOGNA","zona":1,"data_scad":"30/10/2023","tecnico":"Davide T.","data_pian":"30/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4938,"lng":11.3426},{"cliente":"OFFICINA MECCANICA ROVERSI SRL","attivita":"190093","tipo":"INT","citta":"CALDERARA DI RENO","zona":5,"data_scad":"28/10/2023","tecnico":"Roberto A.","data_pian":"31/10/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"PORTARE RICAMBI","lat":44.5641,"lng":11.2672},{"cliente":"ELETTROMECCANICA FABBRI SRL","attivita":"190599","tipo":"INT","citta":"FUNO DI ARGELATO","zona":5,"data_scad":"02/11/2023","tecnico":"Davide T.","data_pian":"03/11/2023","stato":"PIANIFICATA","stato_prep":"STAND BY","note":"MATTINA","lat":44.605,"lng":11.355},{"cliente":"PNEUMATEC SRL","attivita":"190086","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"06/11/2023","tecnico":"Luca B.","data_pian":"07/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5647,"lng":11.3706},{"cliente":"OFFICINA EST SNC","attivita":"190329","tipo":"CH","citta":"BARICELLA","zona":2,"data_scad":"06/11/2023","tecnico":"Luca B.","data_pian":"08/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.6467,"lng":11.5355},{"cliente":"OFFICINA MECCANICA ROVERSI SRL","attivita":"190440","tipo":"MP","citta":"CALDERARA DI RENO","zona":5,"data_scad":"07/11/2023","tecnico":"Roberto A.","data_pian":"09/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.5641,"lng":11.2672},{"cliente":"FONDERIE PIANURA SRL","attivita":"190129","tipo":"CH","citta":"SAN FELICE SUL PANARO","zona":20,"data_scad":"09/11/2023","tecnico":"Marco F.","data_pian":"09/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.8424,"lng":11.1449},{"cliente":"REFRIGERAZIONE RENO SRL","attivita":"190526","tipo":"CH","citta":"PORRETTA TERME","zona":7,"data_scad":"09/11/2023","tecnico":"Marco F.","data_pian":"12/11/2023","stato":"PIANIFICATA","stato_prep":"IN PREPARAZIONE","note":"CHIAMARE PRIMA DI ANDARE","lat":44.1579,"lng":10.9992},{"cliente":"LOGISTICA ADRIATICA SPA","attivita":"190521","tipo":"CH","citta":"IMOLA","zona":4,"data_scad":"08/11/2023","tecnico":"Marco F.","data_pian":"15/11/2023","stato":"PIANIFICATA","stato_prep":"OK PRONTO","note":"","lat":44.3535,"lng":11.714},{"cliente":"PORTE INDUSTRIALI EMILIA SRL","attivita":"190286","tipo":"CH","citta":"SAN LAZZARO DI SAVENA","zona":4,"data_scad":"15/11/2023","tecnico":"Sara M.","data_pian":"15/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"","lat":44.4699,"lng":11.4081},{"cliente":"AUTOMAZIONI SAVENA SRL","attivita":"190021","tipo":"NOR_CON","citta":"SAN LAZZARO DI SAVENA","zona":4,"data_scad":"14/11/2023","tecnico":"Roberto A.","data_pian":"16/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ATTENDERE CONFERMA","lat":44.4699,"lng":11.4081},{"cliente":"VETRERIA PADANA SPA","attivita":"190147","tipo":"INT","citta":"PORTOMAGGIORE","zona":13,"data_scad":"18/11/2023","tecnico":"Sara M.","data_pian":"18/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.6975,"lng":11.8061},{"cliente":"MECCANICA PIANORO SRL","attivita":"190514","tipo":"MC","citta":"PIANORO","zona":8,"data_scad":"18/11/2023","tecnico":"Sara M.","data_pian":"18/11/2023","stato":"PIANIFICATA","stato_prep":"STAND BY","note":"POMERIGGIO","lat":44.3847,"lng":11.3456},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190592","tipo":"NOR_CON","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"18/11/2023","tecnico":"Luca B.","data_pian":"18/11/2023","stato":"PIANIFICATA","stato_prep":"ATTENDO RISP","note":"CLIENTE PRIORITARIO","lat":44.5647,"lng":11.3706},{"cliente":"COOPERATIVA Po SRL","attivita":"190582","tipo":"CH","citta":"REVERE","zona":61,"data_scad":"19/11/2023","tecnico":"Sara M.","data_pian":"23/11/2023","stato":"PIANIFICATA","stato_prep":"IN PREPARAZIONE","note":"","lat":45.0517,"lng":11.1311},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190266","tipo":"MC","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"23/11/2023","tecnico":"Davide T.","data_pian":"23/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"CHIAMARE PRIMA DI ANDARE","lat":44.5537,"lng":11.4471},{"cliente":"OFFICINA MECCANICA BERNI SNC","attivita":"190533","tipo":"CH","citta":"BOLOGNA","zona":1,"data_scad":"23/11/2023","tecnico":"Davide T.","data_pian":"26/11/2023","stato":"PIANIFICATA","stato_prep":"OK PRONTO","note":"","lat":44.4938,"lng":11.3426},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190192","tipo":"MC","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"24/11/2023","tecnico":"Sara M.","data_pian":"26/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ATTENDERE CONFERMA","lat":44.5647,"lng":11.3706},{"cliente":"FLUIDOTECH ITALIA SRL","attivita":"190371","tipo":"MC","citta":"ZOLA PREDOSA","zona":6,"data_scad":"25/11/2023","tecnico":"Marco F.","data_pian":"26/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"ATTENDERE CONFERMA","lat":44.493,"lng":11.2135},{"cliente":"OLEODINAMICA PADANA SRL","attivita":"190291","tipo":"INT","citta":"MODENA","zona":19,"data_scad":"26/11/2023","tecnico":"Sara M.","data_pian":"27/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"URGENTE - FERMO PRODUZIONE","lat":44.6471,"lng":10.9252},{"cliente":"PNEUMATEC SRL","attivita":"190221","tipo":"MP","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"27/11/2023","tecnico":"Roberto A.","data_pian":"28/11/2023","stato":"ATTIVITA_FATTA","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.5647,"lng":11.3706},{"cliente":"PNEUMATEC SRL","attivita":"190505","tipo":"INT","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"30/11/2023","tecnico":"Roberto A.","data_pian":"04/12/2023","stato":"PIANIFICATA","stato_prep":"IN PREPARAZIONE","note":"","lat":44.5647,"lng":11.3706},{"cliente":"TRASPORTI DELTA SPA","attivita":"190581","tipo":"MP","citta":"COMACCHIO","zona":13,"data_scad":"13/12/2023","tecnico":"Roberto A.","data_pian":"14/12/2023","stato":"PIANIFICATA","stato_prep":"STAND BY","note":"URGENTE - FERMO PRODUZIONE","lat":44.6978,"lng":12.1822},{"cliente":"INDUSTRIE PIANURA SPA","attivita":"190553","tipo":"CH","citta":"SALA BOLOGNESE","zona":5,"data_scad":"16/12/2023","tecnico":"Marco F.","data_pian":"23/12/2023","stato":"PIANIFICATA","stato_prep":"ATTENDO RISP","note":"CHIAMARE PRIMA DI ANDARE","lat":44.6238,"lng":11.2507},{"cliente":"PNEUMATEC SRL","attivita":"190543","tipo":"MP","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"20/12/2023","tecnico":"Davide T.","data_pian":"25/12/2023","stato":"PIANIFICATA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.5647,"lng":11.3706},{"cliente":"FRIGOEMILIA SNC","attivita":"190489","tipo":"CH","citta":"SANT'AGATA BOLOGNESE","zona":5,"data_scad":"23/12/2023","tecnico":"Sara M.","data_pian":"30/12/2023","stato":"PIANIFICATA","stato_prep":"OK PRONTO","note":"POMERIGGIO","lat":44.5813,"lng":11.1389},{"cliente":"CARPENTERIA APPENNINO SRL","attivita":"190478","tipo":"INT","citta":"MARZABOTTO","zona":7,"data_scad":"03/11/2023","tecnico":"","data_pian":"","stato":"STAND BY","stato_prep":"ATTENDO RISP","note":"CHIEDERE DEL RESPONSABILE","lat":44.3369,"lng":11.2009},{"cliente":"CONSERVIFICIO PARMA NORD SPA","attivita":"190552","tipo":"MC","citta":"PARMA","zona":26,"data_scad":"04/11/2023","tecnico":"","data_pian":"","stato":"STAND BY","stato_prep":"STAND BY","note":"MATTINA","lat":44.8015,"lng":10.3279},{"cliente":"INDUSTRIE PIANURA SPA","attivita":"190573","tipo":"MC","citta":"SALA BOLOGNESE","zona":5,"data_scad":"05/11/2023","tecnico":"Marco F.","data_pian":"","stato":"DA FARE","stato_prep":"OK PRONTO","note":"MATTINA","lat":44.6238,"lng":11.2507},{"cliente":"VERNICIATURA EMILIANA SPA","attivita":"190519","tipo":"NOR_CON","citta":"CASALECCHIO DI RENO","zona":6,"data_scad":"07/11/2023","tecnico":"Sara M.","data_pian":"","stato":"DA FARE","stato_prep":"ATTENDO RISP","note":"","lat":44.4744,"lng":11.2722},{"cliente":"REFRIGERAZIONE RENO SRL","attivita":"190597","tipo":"MP","citta":"PORRETTA TERME","zona":7,"data_scad":"12/11/2023","tecnico":"Luca B.","data_pian":"","stato":"DA FARE","stato_prep":"STAND BY","note":"","lat":44.1579,"lng":10.9992},{"cliente":"PNEUMATEC SRL","attivita":"190494","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"15/11/2023","tecnico":"Roberto A.","data_pian":"","stato":"DA FARE","stato_prep":"ATTENDO RISP","note":"","lat":44.5647,"lng":11.3706},{"cliente":"COMPRESSORI PADANA SPA","attivita":"190528","tipo":"NOR_CON","citta":"ZOLA PREDOSA","zona":6,"data_scad":"15/11/2023","tecnico":"Sara M.","data_pian":"","stato":"DA FARE","stato_prep":"OK PRONTO","note":"","lat":44.493,"lng":11.2135},{"cliente":"ELETTROMECCANICA FABBRI SRL","attivita":"190558","tipo":"CH","citta":"FUNO DI ARGELATO","zona":5,"data_scad":"18/11/2023","tecnico":"Davide T.","data_pian":"","stato":"DA FARE","stato_prep":"ATTENDO RISP","note":"MATTINA","lat":44.605,"lng":11.355},{"cliente":"OFFICINA MECCANICA ROVERSI SRL","attivita":"190481","tipo":"CH","citta":"CALDERARA DI RENO","zona":5,"data_scad":"19/11/2023","tecnico":"","data_pian":"","stato":"STAND BY","stato_prep":"STAND BY","note":"","lat":44.5641,"lng":11.2672},{"cliente":"POLIMERI NORD SAS","attivita":"190572","tipo":"CH","citta":"ARGELATO","zona":3,"data_scad":"21/11/2023","tecnico":"","data_pian":"","stato":"STAND BY","stato_prep":"ATTENDO RISP","note":"","lat":44.6197,"lng":11.3488},{"cliente":"POLIMERI NORD SAS","attivita":"190578","tipo":"INT","citta":"ARGELATO","zona":3,"data_scad":"24/11/2023","tecnico":"Luca B.","data_pian":"","stato":"DA FARE","stato_prep":"OK PRONTO","note":"CHIAMARE PRIMA DI ANDARE","lat":44.6197,"lng":11.3488},{"cliente":"TRASPORTI GRANAROLO SRL","attivita":"190602","tipo":"CH","citta":"GRANAROLO DELL'EMILIA","zona":2,"data_scad":"24/11/2023","tecnico":"Sara M.","data_pian":"","stato":"DA FARE","stato_prep":"OK PRONTO","note":"CLIENTE PRIORITARIO","lat":44.5537,"lng":11.4471},{"cliente":"INDUSTRIE PIANURA SPA","attivita":"190499","tipo":"CH","citta":"SALA BOLOGNESE","zona":5,"data_scad":"25/11/2023","tecnico":"Sara M.","data_pian":"","stato":"DA FARE","stato_prep":"IN PREPARAZIONE","note":"POMERIGGIO","lat":44.6238,"lng":11.2507},{"cliente":"COOPERATIVA Po SRL","attivita":"190512","tipo":"CH","citta":"REVERE","zona":61,"data_scad":"27/11/2023","tecnico":"","data_pian":"","stato":"STAND BY","stato_prep":"STAND BY","note":"CHIAMARE PRIMA DI ANDARE","lat":45.0517,"lng":11.1311},{"cliente":"VETRERIA PADANA SPA","attivita":"190511","tipo":"CH","citta":"PORTOMAGGIORE","zona":13,"data_scad":"30/11/2023","tecnico":"Sara M.","data_pian":"","stato":"DA FARE","stato_prep":"STAND BY","note":"CHIAMARE PRIMA DI ANDARE","lat":44.6975,"lng":11.8061},{"cliente":"AUTOMAZIONE INDUSTRIALE NORD SPA","attivita":"190563","tipo":"MP","citta":"NONANTOLA","zona":19,"data_scad":"30/11/2023","tecnico":"","data_pian":"","stato":"DA RIPIANIFICARE","stato_prep":"STAND BY","note":"","lat":44.6786,"lng":11.0417},{"cliente":"CARROZZERIA MONTALI SRL","attivita":"190506","tipo":"CH","citta":"BOLOGNA","zona":1,"data_scad":"02/12/2023","tecnico":"Marco F.","data_pian":"","stato":"DA FARE","stato_prep":"IN PREPARAZIONE","note":"CLIENTE PRIORITARIO","lat":44.4938,"lng":11.3426},{"cliente":"IDROPRESS OVEST SRL","attivita":"190486","tipo":"CH","citta":"SAN GIOVANNI IN PERSICETO","zona":5,"data_scad":"05/12/2023","tecnico":"Sara M.","data_pian":"","stato":"DA FARE","stato_prep":"ATTENDO RISP","note":"URGENTE - FERMO PRODUZIONE","lat":44.638,"lng":11.1878},{"cliente":"LOGISTICA ADRIATICA SPA","attivita":"190498","tipo":"CH","citta":"IMOLA","zona":4,"data_scad":"05/12/2023","tecnico":"Marco F.","data_pian":"","stato":"DA FARE","stato_prep":"ATTENDO RISP","note":"ACCESSO CONTROLLATO","lat":44.3535,"lng":11.714},{"cliente":"ELETTROMECCANICA FABBRI SRL","attivita":"190530","tipo":"NOR_SOST","citta":"FUNO DI ARGELATO","zona":5,"data_scad":"05/12/2023","tecnico":"Sara M.","data_pian":"","stato":"DA FARE","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.605,"lng":11.355},{"cliente":"OFFICINA MECCANICA BERNI SNC","attivita":"190504","tipo":"MP","citta":"BOLOGNA","zona":1,"data_scad":"06/12/2023","tecnico":"Sara M.","data_pian":"","stato":"DA FARE","stato_prep":"IN PREPARAZIONE","note":"ACCESSO CONTROLLATO","lat":44.4938,"lng":11.3426},{"cliente":"AGROFRIGOR SRL","attivita":"190548","tipo":"CH","citta":"FOSSATONE DI MEDICINA","zona":2,"data_scad":"10/12/2023","tecnico":"Marco F.","data_pian":"","stato":"DA FARE","stato_prep":"ATTENDO RISP","note":"POMERIGGIO","lat":44.49,"lng":11.67},{"cliente":"STAMPI PRECISIONE SRL","attivita":"190565","tipo":"CH","citta":"CALDERARA DI RENO","zona":5,"data_scad":"12/12/2023","tecnico":"Davide T.","data_pian":"","stato":"DA FARE","stato_prep":"STAND BY","note":"POMERIGGIO","lat":44.5641,"lng":11.2672},{"cliente":"PLASTIFORM SAS","attivita":"190538","tipo":"CH","citta":"VALSALAGGIA LOC. BAZZANO","zona":6,"data_scad":"18/12/2023","tecnico":"Roberto A.","data_pian":"","stato":"DA FARE","stato_prep":"OK PRONTO","note":"CHIEDERE DEL RESPONSABILE","lat":44.5121,"lng":11.104},{"cliente":"IMPIANTI CORVINI SPA","attivita":"190607","tipo":"CH","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"19/12/2023","tecnico":"","data_pian":"","stato":"DA RIPIANIFICARE","stato_prep":"OK PRONTO","note":"ACCESSO CONTROLLATO","lat":44.5647,"lng":11.3706},{"cliente":"TRASMISSIONI OVEST SRL","attivita":"190589","tipo":"MP","citta":"ZOLA PREDOSA","zona":6,"data_scad":"22/12/2023","tecnico":"","data_pian":"","stato":"DA RIPIANIFICARE","stato_prep":"OK PRONTO","note":"CHIAMARE PRIMA DI ANDARE","lat":44.493,"lng":11.2135},{"cliente":"FLUIDOTECH ITALIA SRL","attivita":"190569","tipo":"MP","citta":"ZOLA PREDOSA","zona":6,"data_scad":"23/12/2023","tecnico":"Roberto A.","data_pian":"","stato":"DA FARE","stato_prep":"STAND BY","note":"CHIEDERE DEL RESPONSABILE","lat":44.493,"lng":11.2135},{"cliente":"ARIA COMPRESSA NORD SRL","attivita":"190585","tipo":"MP","citta":"CASTEL MAGGIORE","zona":3,"data_scad":"25/12/2023","tecnico":"Marco F.","data_pian":"","stato":"DA FARE","stato_prep":"ATTENDO RISP","note":"","lat":44.5647,"lng":11.3706}];
+var STATO_COLOR = {'DA FARE':'#e05c2a','PIANIFICATA':'#2ca1fe','STAND BY':'#f0a020','DA RIPIANIFICARE':'#c040c0','ATTIVITA_FATTA':'#4a6a4a'};
+var STATO_LABEL = {'DA FARE':'Da fare','PIANIFICATA':'Pianificata','STAND BY':'Stand by','DA RIPIANIFICARE':'Da ripianificare','ATTIVITA_FATTA':'Chiusa'};
+var PR_COLOR = {'Alta':'#e05c2a','Media':'#f0a020','Bassa':'#4a9a6a'};
+var LS_KEY = 'ts_priorita_2023';
+function loadPriorita(){try{return JSON.parse(localStorage.getItem(LS_KEY))||{};}catch(e){return{};}}
+function savePriorita(p){try{localStorage.setItem(LS_KEY,JSON.stringify(p));}catch(e){}}
+var prioritaMap = loadPriorita();
+var activeFilters = {stato:new Set(),tipo:new Set(),tecnico:new Set(),priorita:new Set()};
+var markerMap = {};
+var isMobile = function(){ return window.innerWidth <= 768; };
+
+var map = L.map('map', {zoomControl:true}).setView([44.58,11.30],9);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:16}).addTo(map);
+
+// Event delegation priorità
+document.addEventListener('change', function(e){
+  if(e.target && e.target.classList.contains('prio-select')){
+    setPriorita(e.target.getAttribute('data-att'), e.target.value);
+  }
+});
+
+// Drawer mobile
+function openDrawer(tab){
+  var drawer = document.getElementById('mob-drawer');
+  drawer.classList.add('open');
+  switchTab(tab);
+  document.getElementById('fab-lista').classList.toggle('active', tab==='lista');
+  document.getElementById('fab-filtri').classList.toggle('active', tab==='filtri');
+}
+function closeDrawer(){
+  document.getElementById('mob-drawer').classList.remove('open');
+  document.getElementById('fab-lista').classList.remove('active');
+  document.getElementById('fab-filtri').classList.remove('active');
+}
+function switchTab(tab){
+  document.querySelectorAll('.drawer-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab===tab); });
+  document.querySelectorAll('.drawer-panel').forEach(function(p){ p.classList.toggle('active', p.id==='panel-'+tab); });
+}
+// Chiudi drawer toccando la mappa
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('map').addEventListener('click', function(){ if(isMobile()) closeDrawer(); });
+});
+
+function mkIcon(stato,open,pr){
+  var col=STATO_COLOR[stato]||'#888';
+  var r=open?9:5; var s=r*2;
+  var brd=pr&&PR_COLOR[pr]?'3px solid '+PR_COLOR[pr]:'2px solid rgba(255,255,255,0.85)';
+  var shd=pr&&PR_COLOR[pr]?'0 0 0 1px '+PR_COLOR[pr]+',0 1px 5px rgba(0,0,0,0.35)':'0 1px 5px rgba(0,0,0,0.35)';
+  return L.divIcon({className:'',html:'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+col+';border:'+brd+';box-shadow:'+shd+';'+(open?'':'opacity:.65;')+'"></div>',iconSize:[s,s],iconAnchor:[r,r]});
+}
+
+function buildPopup(d){
+  var col=STATO_COLOR[d.stato]||'#888';
+  var pr=prioritaMap[d.attivita]||'';
+  var opts=['','Alta','Media','Bassa'].map(function(v){
+    return '<option value="'+v+'"'+(pr===v?' selected':'')+'>'+(v||'Non assegnata')+'</option>';
+  }).join('');
+  return '<div class="ts-popup">'
+    +'<div class="ts-popup-title">'+d.cliente+'</div>'
+    +'<span class="ts-popup-badge" style="background:'+col+'22;color:'+col+';">'+(STATO_LABEL[d.stato]||d.stato)+'</span>'
+    +'<div class="ts-popup-row"><span>Tipo</span><span>'+d.tipo+'</span></div>'
+    +'<div class="ts-popup-row"><span>Citt&#224; / Zona</span><span>'+d.citta+' &#183; Z'+d.zona+'</span></div>'
+    +'<div class="ts-popup-row"><span>Tecnico</span><span>'+(d.tecnico||'&#8212;')+'</span></div>'
+    +'<div class="ts-popup-row"><span>Scadenza</span><span>'+d.data_scad+'</span></div>'
+    +'<div class="ts-popup-row"><span>Pianificato</span><span>'+(d.data_pian||'&#8212;')+'</span></div>'
+    +(d.note?'<div class="ts-popup-note">'+d.note+'</div>':'')
+    +'<div class="ts-popup-prio"><label>Priorit&#224;:</label>'
+    +'<select class="prio-select" data-att="'+d.attivita+'">'+opts+'</select></div>'
+    +'</div>';
+}
+
+function setPriorita(attivita,val){
+  if(val){prioritaMap[attivita]=val;}else{delete prioritaMap[attivita];}
+  savePriorita(prioritaMap);
+  var d=DB.find(function(x){return x.attivita===attivita;});
+  if(!d)return;
+  var open=d.stato!=='ATTIVITA_FATTA';
+  var m=markerMap[attivita];
+  if(m){m.setIcon(mkIcon(d.stato,open,val));m.setPopupContent(buildPopup(d));}
+  document.querySelectorAll('.pr-dot[data-att="'+attivita+'"]').forEach(function(dot){
+    dot.style.background=val?PR_COLOR[val]:'transparent';
+    dot.style.border='2px solid '+(val?PR_COLOR[val]:'#555');
+  });
+}
+
+function getPr(d){return prioritaMap[d.attivita]||'';}
+
+function filtered(){
+  return DB.filter(function(d){
+    if(activeFilters.stato.size>0&&!activeFilters.stato.has(d.stato))return false;
+    if(activeFilters.tipo.size>0&&!activeFilters.tipo.has(d.tipo))return false;
+    if(activeFilters.tecnico.size>0&&!activeFilters.tecnico.has(d.tecnico))return false;
+    if(activeFilters.priorita.size>0&&!activeFilters.priorita.has(getPr(d)))return false;
+    return true;
+  });
+}
+
+function makeListItem(d, container){
+  var col=STATO_COLOR[d.stato]||'#888';
+  var pr=getPr(d);
+  var prCol=pr?PR_COLOR[pr]:'transparent';
+  var prBrd=pr?PR_COLOR[pr]:'#555';
+  var el=document.createElement('div');
+  el.className='list-item';
+  el.innerHTML='<div class="li-top"><div class="li-cliente">'+d.cliente+'</div><div class="li-tipo">'+d.tipo+'</div></div>'
+    +'<div class="li-bottom"><div class="stato-dot" style="background:'+col+';"></div>'
+    +'<div class="li-citta">'+d.citta+'</div>'
+    +(d.tecnico?'<div class="li-tecnico">&#183; '+d.tecnico+'</div>':'')
+    +'<div class="pr-dot" data-att="'+d.attivita+'" style="background:'+prCol+';border:2px solid '+prBrd+';"></div>'
+    +'</div>';
+  (function(dd){el.addEventListener('click',function(){
+    container.querySelectorAll('.list-item').forEach(function(x){x.classList.remove('selected');});
+    el.classList.add('selected');
+    map.setView([dd.lat,dd.lng],13);
+    if(markerMap[dd.attivita])markerMap[dd.attivita].openPopup();
+    if(isMobile()) closeDrawer();
+  });})(d);
+  return el;
+}
+
+function render(){
+  Object.keys(markerMap).forEach(function(k){map.removeLayer(markerMap[k]);});
+  markerMap={};
+  var desktopList = document.getElementById('attivita-list');
+  var mobList = document.getElementById('mob-attivita-list');
+  desktopList.innerHTML='';
+  mobList.innerHTML='';
+
+  var data=filtered();
+  var countTxt=data.length+' risultati';
+  document.getElementById('list-count').textContent=countTxt;
+  document.getElementById('mob-list-count').textContent=countTxt;
+
+  data.forEach(function(d){
+    var open=d.stato!=='ATTIVITA_FATTA';
+    var pr=getPr(d);
+    var m=L.marker([d.lat,d.lng],{icon:mkIcon(d.stato,open,pr)});
+    m.bindPopup(buildPopup(d),{maxWidth:280});
+    m.addTo(map);
+    markerMap[d.attivita]=m;
+    desktopList.appendChild(makeListItem(d, desktopList));
+    mobList.appendChild(makeListItem(d, mobList));
+  });
+
+  var aperte=DB.filter(function(d){return d.stato!=='ATTIVITA_FATTA';}).length;
+  var dafare=DB.filter(function(d){return d.stato==='DA FARE';}).length;
+  var pianif=DB.filter(function(d){return d.stato==='PIANIFICATA';}).length;
+  var tot=DB.length;
+  document.getElementById('kpi-aperte').textContent=aperte;
+  document.getElementById('kpi-dafare').textContent=dafare;
+  document.getElementById('kpi-pianificate').textContent=pianif;
+  document.getElementById('kpi-totale').textContent=tot;
+  document.getElementById('mob-kpi-aperte').textContent=aperte;
+  document.getElementById('mob-kpi-dafare').textContent=dafare;
+  document.getElementById('mob-kpi-totale').textContent=tot;
+}
+
+// Filtri — tutti i .fbtn in pagina (desktop + mobile)
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.fbtn');
+  if(!btn) return;
+  var grp=btn.dataset.group; var val=btn.dataset.val;
+  if(!grp) return;
+  var set=activeFilters[grp];
+  // Sincronizza tutti i bottoni con lo stesso gruppo e valore
+  document.querySelectorAll('.fbtn[data-group="'+grp+'"]').forEach(function(b){
+    if(b.dataset.val===val) b.classList.toggle('active', val==='ALL' || !set.has(val) || (val==='' && !set.has('')));
+  });
+  if(val==='ALL'){
+    set.clear();
+    document.querySelectorAll('.fbtn[data-group="'+grp+'"]').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.fbtn.tutti-btn[data-group="'+grp+'"]').forEach(function(b){b.classList.add('active');});
+  } else {
+    document.querySelectorAll('.fbtn.tutti-btn[data-group="'+grp+'"]').forEach(function(b){b.classList.remove('active');});
+    if(set.has(val)){
+      set.delete(val);
+      document.querySelectorAll('.fbtn[data-group="'+grp+'"][data-val="'+val+'"]').forEach(function(b){b.classList.remove('active');});
+      if(set.size===0) document.querySelectorAll('.fbtn.tutti-btn[data-group="'+grp+'"]').forEach(function(b){b.classList.add('active');});
+    } else {
+      set.add(val);
+      document.querySelectorAll('.fbtn[data-group="'+grp+'"][data-val="'+val+'"]').forEach(function(b){b.classList.add('active');});
+    }
+  }
+  render();
+});
+
+
+// Rileva mobile via touch o larghezza logica
+function detectMobile(){
+  return ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth < 1024;
+}
+if(detectMobile()){
+  document.body.classList.add('mobile');
+}
+window.addEventListener('resize', function(){
+  if(detectMobile()){ document.body.classList.add('mobile'); }
+  else { document.body.classList.remove('mobile'); }
+  map.invalidateSize();
+});
+
+
+
+render();
+
+/* ============================================================
+   DEMO — scenario guidato, come farebbe una persona (nessuna AI)
+============================================================ */
+(function(){
+  var fast = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sleep = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+  var pausa = function(ms){ return sleep(fast ? 40 : ms); };
+  var running = false, areaBox = null;
+  var URG = '190486'; // intervento "URGENTE - FERMO PRODUZIONE" usato nel passo 4-5
+  var cap = document.getElementById('demo-caption');
+
+  function aperte(){ return DB.filter(function(d){ return d.stato !== 'ATTIVITA_FATTA'; }); }
+  function say(n, html){ cap.innerHTML = (n ? '<span class="cap-n">' + n + '/6</span>' : '') + html; cap.style.display = 'block'; }
+  async function evid(el){ if(el && el.offsetParent){ el.classList.add('demo-active'); await pausa(500); } }
+  function unevid(el){ if(el) el.classList.remove('demo-active'); }
+  async function filtro(grp, val){
+    var b = document.querySelector('.fbtn[data-group="' + grp + '"][data-val="' + val + '"]');
+    await evid(b); b.click(); await pausa(450); unevid(b);
+  }
+  function resetTutto(){
+    ['stato','tipo','tecnico','priorita'].forEach(function(g){
+      if(activeFilters[g].size) document.querySelector('.fbtn.tutti-btn[data-group="' + g + '"]').click();
+    });
+    setPriorita(URG, '');
+    if(areaBox){ map.removeLayer(areaBox); areaBox = null; }
+    map.closePopup();
+    map.setView([44.58, 11.30], 9);
+    cap.style.display = 'none';
+  }
+
+  window.avviaDemo = async function(){
+    if(running) return;
+    running = true;
+    var btn = document.getElementById('demo-run-btn');
+    btn.disabled = true; btn.classList.remove('attira'); btn.textContent = 'Demo in corso…';
+    document.body.classList.add('demo-run');
+    try{
+      closeDrawer();
+      resetTutto();
+      await pausa(800);
+
+      // 1 — colpo d'occhio
+      var op = aperte();
+      say(1, 'Lunedì mattina: <b>' + op.length + ' interventi aperti</b> su ' + DB.length + '. Ognuno è un punto sulla mappa, non una riga di un foglio Excel.');
+      var kpi = document.getElementById('header-right');
+      await evid(kpi); await pausa(3200); unevid(kpi);
+
+      // 2 — solo gli aperti
+      say(2, 'Nascondo gli interventi già chiusi: restano i <b>' + op.length + ' da gestire</b>.');
+      await filtro('stato', 'DA FARE'); await filtro('stato', 'PIANIFICATA');
+      await filtro('stato', 'STAND BY'); await filtro('stato', 'DA RIPIANIFICARE');
+      await pausa(2000);
+
+      // 3 — carico dei tecnici
+      var nSara = op.filter(function(d){ return d.tecnico === 'Sara M.'; }).length;
+      var nLuca = op.filter(function(d){ return d.tecnico === 'Luca B.'; }).length;
+      say(3, 'Chi è carico? <b>Sara ha ' + nSara + ' interventi aperti</b>.');
+      await filtro('tecnico', 'Sara M.'); await pausa(2800);
+      await filtro('tecnico', 'Sara M.');
+      say(3, '<b>Luca ne ha solo ' + nLuca + '</b>: il carico è squilibrato e si vede in due clic.');
+      await filtro('tecnico', 'Luca B.'); await pausa(2800);
+      await filtro('tecnico', 'Luca B.');
+
+      // 4 — l'urgenza
+      var u = DB.find(function(d){ return d.attivita === URG; });
+      say(4, 'Un intervento è segnato <b>' + u.note + '</b> (' + u.cliente + ', ' + u.citta + '). Lo apro dalla mappa.');
+      map.setView([u.lat, u.lng], 12);
+      await pausa(1300);
+      markerMap[URG].openPopup();
+      await pausa(2800);
+
+      // 5 — priorità
+      say(5, 'Gli assegno <b>priorità Alta</b>: il punto prende un anello di priorità e la scelta resta salvata nel browser.');
+      var sel = document.querySelector('.prio-select[data-att="' + URG + '"]');
+      await evid(sel);
+      sel.value = 'Alta';
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      await pausa(2800); unevid(sel);
+      map.closePopup();
+
+      // 6 — interventi vicini
+      var zone = op.filter(function(d){ return d.zona === 3 || d.zona === 5; });
+      var bounds = L.latLngBounds(zone.map(function(d){ return [d.lat, d.lng]; }));
+      say(6, '<b>' + zone.length + ' interventi aperti</b> sono concentrati a nord di Bologna (zone 3 e 5): si possono raggruppare in un solo giro invece di viaggi separati.');
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 11 });
+      areaBox = L.rectangle(bounds.pad(0.12), { color: '#33d6a6', weight: 2, dashArray: '6 6', fill: false, interactive: false }).addTo(map);
+      await pausa(5200);
+
+      // fine
+      say(0, '<b>Dalla lista alla mappa.</b> Dati fittizi, ma il principio è questo: vedere dove sono gli interventi, chi è carico e cosa è urgente.');
+    } finally {
+      document.body.classList.remove('demo-run');
+      running = false;
+      btn.disabled = false; btn.textContent = '↻ Rivedi la demo';
+    }
+  };
+})();
+</script>
+</body>
+</html>
