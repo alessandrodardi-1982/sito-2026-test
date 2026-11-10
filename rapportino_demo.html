@@ -68,6 +68,13 @@
   }
   .btn-demo-cta:hover{ transform:translateY(-1px); box-shadow:0 4px 18px rgba(0,212,170,0.4); }
   .btn-demo-cta:disabled{ opacity:.65; cursor:wait; transform:none; box-shadow:none; }
+  /* pulsante lampeggiante finché non viene premuto */
+  .btn-demo-cta.attira{ animation:demoPulse 1.3s ease-in-out infinite; }
+  @keyframes demoPulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(0,212,170,0.65); transform:scale(1); }
+    50%{ box-shadow:0 0 0 12px rgba(0,212,170,0); transform:scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce){ .btn-demo-cta.attira{ animation:none; box-shadow:0 0 0 3px rgba(0,212,170,0.55); } }
   .demo-active{ outline:2px solid #00d4aa; outline-offset:2px; border-radius:8px; }
   /* Bottone portfolio nell'header */
   .btn-portfolio-back{
@@ -224,7 +231,7 @@
 
 <div class="demo-cta-banner">
   <span><strong>Versione demo</strong> — Guarda il rapportino compilarsi da solo, come farebbe un tecnico sul campo.</span>
-  <button class="btn-demo-cta" onclick="avviaDemo()">▶ Avvia compilazione simulata</button>
+  <button class="btn-demo-cta attira" onclick="avviaDemo()">▶ Avvia compilazione simulata</button>
 </div>
 
 <div class="demo-banner">Dati dimostrativi — scenario TecnoService Industriale Srl</div>
@@ -1204,7 +1211,7 @@ async function avviaDemo(){
   if (current.orarioArrivo || current.cliente){ location.href = location.pathname + "?demo=1"; return; }
   _demoRunning = true; _demoMode = true;
   const btn = document.querySelector(".btn-demo-cta");
-  btn.disabled = true; btn.textContent = "Compilazione in corso…";
+  btn.disabled = true; btn.classList.remove("attira"); btn.textContent = "Compilazione in corso…";
   try {
     window.scrollTo({ top: 0, behavior: _fast ? "auto" : "smooth" });
     await pausa(600);
