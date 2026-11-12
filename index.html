@@ -543,6 +543,19 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   .proj-wide .proj-body { padding: 20px 22px; }
 }
 
+/* riga da due: Cruscotto SLA + Mappa operativa, metà larghezza ciascuna */
+.proj-pair { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.proj-pair .proj-thumb { height: 170px; }
+.proj-pair .proj-body { padding: 26px 28px; }
+.proj-pair .proj-card h3 { font-size: 1.05rem; }
+.proj-pair .proj-card p { font-size: 0.88rem; }
+.proj-t8 { background: linear-gradient(135deg, #FBEFEA 0%, #F4D3C8 100%); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .proj-t8 { background: linear-gradient(135deg,#2A1612,#3C201A); } }
+:root[data-theme="dark"] .proj-t8 { background: linear-gradient(135deg,#2A1612,#3C201A); }
+@media (max-width: 820px) {
+  .proj-pair { grid-template-columns: 1fr; }
+}
+
 /* COME LAVORO */
 .process-wrap {
   display: grid;
@@ -776,7 +789,7 @@ footer {
         <div class="strip-desc">Interventi l'anno</div>
       </div>
       <div class="strip-cell fade-up">
-        <div class="strip-num" data-count="7" data-suffix="">7</div>
+        <div class="strip-num" data-count="8" data-suffix="">8</div>
         <div class="strip-desc">Tool costruiti</div>
       </div>
       <div class="strip-cell fade-up">
@@ -869,7 +882,7 @@ footer {
           </svg>
         </div>
         <h3>So costruire soluzioni</h3>
-        <p>Non fermo il problema all'analisi. Se serve uno strumento, lo costruisco. <strong>I sette tool nel portfolio sono partiti da problemi reali.</strong></p>
+        <p>Non fermo il problema all'analisi. Se serve uno strumento, lo costruisco. <strong>Gli otto tool nel portfolio sono partiti da problemi reali.</strong></p>
       </div>
       <div class="svc-card">
         <div class="svc-icon">
@@ -890,11 +903,39 @@ footer {
 <section id="projects" class="section">
   <div class="inner">
     <div class="eyebrow fade-up">Portfolio</div>
-    <h2 class="s-title fade-up">Sette tool costruiti, non descritti.</h2>
+    <h2 class="s-title fade-up">Otto tool costruiti, non descritti.</h2>
     <p class="s-lead fade-up">Ogni progetto nasce da situazioni che ho vissuto direttamente sul lavoro. I dati di esempio sono fittizi, ma costruiti su casi reali: sono gli strumenti che avrei voluto avere durante le mie attività quotidiane.</p>
     <div class="projects-grid">
 
-      <div class="proj-card proj-wide fade-up">
+      <div class="proj-pair">
+
+      <div class="proj-card fade-up">
+        <div class="proj-thumb proj-t8">
+          <svg width="64" height="64" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
+            <circle cx="26" cy="29" r="15"/>
+            <line x1="26" y1="29" x2="26" y2="19"/>
+            <line x1="26" y1="29" x2="33" y2="33"/>
+            <line x1="22" y1="6" x2="30" y2="6"/>
+            <line x1="26" y1="6" x2="26" y2="14"/>
+            <line x1="40" y1="12" x2="43" y2="9"/>
+          </svg>
+        </div>
+        <div class="proj-body">
+          <div class="proj-cat">Service Management · SLA</div>
+          <h3>Cruscotto SLA e ticket</h3>
+          <p>Per chi gestisce un servizio di assistenza: tempi di presa in carico e di chiusura rispetto agli SLA, carico per tecnico e ticket in ritardo, con filtri per periodo, priorità, tecnico e zona. La demo usa 300 ticket di esempio e si guida da sola: basta premere il pulsante.</p>
+          <p class="proj-metric">In pochi clic si vede dove il servizio perde tempo e chi è sovraccarico.</p>
+          <div class="proj-foot">
+            <span class="proj-privacy">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1L1.5 3v3.5c0 2.5 2 4.5 4.5 5 2.5-.5 4.5-2.5 4.5-5V3L6 1z"/></svg>
+              Demo · Dati fittizi
+            </span>
+            <a href="progetti/sla-ticket/" target="_blank" class="proj-link">Prova →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="proj-card fade-up">
         <div class="proj-thumb proj-t7">
           <svg width="64" height="64" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
             <path d="M26 46s-12-11-12-20a12 12 0 0 1 24 0c0 9-12 20-12 20z"/>
@@ -917,6 +958,8 @@ footer {
             <a href="progetti/mappa-interventi/" target="_blank" class="proj-link">Prova →</a>
           </div>
         </div>
+      </div>
+
       </div>
 
       <div class="proj-card fade-up">
